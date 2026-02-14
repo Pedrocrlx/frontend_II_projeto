@@ -1,4 +1,4 @@
-# Start infrastructure (Postgres + Adminer)
+# Start infrastructure (Postgres + Adminer for local development)
 up:
 	docker compose up -d
 
@@ -11,7 +11,7 @@ down:
 db-migrate:
 	bunx prisma migrate dev
 
-# Open Prisma Data Studio
+# Open Prisma Data Studio to add data on the database
 studio:
 	bunx prisma studio
 
@@ -20,11 +20,6 @@ studio:
 setup: up
 	sleep 5
 	bunx prisma migrate dev
-
-# Start the development server only (Fast start)
-# Assumes DB is already running
-dev:
-	bun dev
 
 # If you really want one command for everything (slower boot)
 start-all: up

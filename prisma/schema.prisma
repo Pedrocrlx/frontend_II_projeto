@@ -13,18 +13,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Teste {
-  id Int @id @default(autoincrement())
-  nome String
-}
-
 model BarberShop {
   id          String    @id @default(cuid())
-  slug        String    @unique // Ex: "barbearia-vintage"
+  slug        String    @unique // Ex: "Pedro BarberShop"
   name        String
   description String?
   logoUrl     String?
-  config      Json?     // Para guardar cores: { primary: "#000", font: "Roboto" }
+  config      Json?     // save config for styles: { primary: "#000", font: "Roboto" }
   services    Service[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -35,7 +30,7 @@ model Service {
   name         String
   description  String?
   price        Decimal
-  duration     Int        // Em minutos
+  duration     Int
   barberShopId String
   barberShop   BarberShop @relation(fields: [barberShopId], references: [id])
 }
