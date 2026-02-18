@@ -1,36 +1,112 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BarberBrand
+
+BarberBrand is a multi-tenant SaaS platform designed for barbershops and salons, enabling them to create and manage their own fully customizable, high-performance websites. The platform is built with a focus on SEO, performance, and a "White Label" experience for each tenant.
+
+## Tech Stack
+
+This project leverages a modern, robust, and scalable technology stack:
+
+-   **Core Framework:** [Next.js](https://nextjs.org/) (App Router)
+-   **Runtime:** [Bun](https://bun.sh/)
+-   **Language:** [TypeScript](https://www.typescriptlang.org/)
+-   **Database ORM:** [Prisma](https://www.prisma.io/)
+-   **Database:** [PostgreSQL](https://www.postgresql.org/) (managed via Docker for local development)
+-   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+-   **UI Components:** [Shadcn UI](https://ui.shadcn.com/)
+-   **API Communication:** [Axios](https://axios-http.com/)
+-   **Testing:** [Jest](https://jestjs.io/) & [React Testing Library](https://testing-library.com/)
 
 ## Getting Started
 
-First, run the development server:
+Follow these instructions to set up and run the project in a local development environment.
+
+### Prerequisites
+
+-   [Bun](https://bun.sh/docs/installation)
+-   [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose
+
+### 1. Clone the Repository
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd frontend_II_projeto
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependencies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+This project uses Bun as its package manager.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+bun install
+```
 
-## Learn More
+### 3. Set Up Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Create a `.env` file by copying the example file. This will contain the database connection string.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cp example.env .env
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The default `DATABASE_URL` is configured for the local Docker environment.
 
-## Deploy on Vercel
+### 4. Start the Database
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Run the PostgreSQL database service using Docker Compose.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+docker compose up -d
+```
+The `-d` flag runs the container in detached mode.
+
+### 5. Run Database Migrations
+
+Apply the latest database schema changes using Prisma.
+
+```bash
+bunx prisma migrate dev
+```
+
+## Development
+
+### Running the Development Server
+
+To start the Next.js development server:
+
+```bash
+bun run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+
+### Available Scripts
+
+-   `bun run dev`: Starts the development server.
+-   `bun run build`: Creates a production-ready build of the application.
+-   `bun run start`: Starts the production server (requires `build` to be run first).
+-   `bun run lint`: Runs ESLint to check for code quality and style issues.
+-   `bun test`: Executes tests using Jest.
+-   `bun test:watch`: Runs Jest in interactive watch mode.
+
+## Project Structure
+
+The codebase is organized to maintain a clean and scalable architecture:
+
+-   `src/app/`: Contains the core application logic, following the Next.js App Router convention.
+    -   `api/`: API route handlers.
+    -   `[slug]/`: Dynamic pages for each tenant (barbershop).
+-   `src/components/`: Shared React components, including UI primitives from Shadcn.
+-   `src/services/`: Houses API service modules (e.g., Axios wrappers) for interacting with the backend.
+-   `src/lib/`: Utility functions and library initializations (e.g., `prisma.ts`).
+-   `prisma/`: Contains the Prisma schema (`schema.prisma`), migrations, and seed scripts.
+-   `docs/`: Project documentation, including coding guidelines and specifications.
+
+## Coding Guidelines
+
+We adhere to a strict set of coding guidelines to ensure consistency and maintainability. Key principles include:
+
+-   **KISS (Keep It Simple, Stupid):** Prioritize simple, readable solutions.
+-   **Strict Typing:** Use TypeScript effectively and avoid the `any` type.
+-   **Service Pattern:** Encapsulate all API communication within the `src/services` directory.
+
+For a complete overview, please refer to the [Coding Guidelines](docs/CODING_GUIDELINE.md).

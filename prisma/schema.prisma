@@ -19,42 +19,71 @@ model BarberShop {
   name        String
   description String?
   logoUrl     String?
-  config      Json?     // save config for styles: { primary: "#000", font: "Roboto" }
+  config      Json? // save config for styles: { primary: "#000", font: "Roboto" }
   services    Service[]
   barbers     Barber[]
+  bookings    Booking[] // Back-relation for bookings
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
 
 model Barber {
-  id           String     @id @default(uuid())
-  name         String
-  imageUrl     String?
-  description  String?
-  
+  id          String  @id @default(uuid())
+  name        String
+  imageUrl    String?
+  description String?
+
   // Tenant Isolation
   barberShopId String
   barberShop   BarberShop @relation(fields: [barberShopId], references: [id])
 
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
 }
 
 model Booking {
-  id           String     @id @default(uuid())
-  date         DateTime
-  time         String
-  status       String
-  barberId     String
-  barber       Barber   @relation(fields: [barberId], references: [id])
+  id        String        @id @default(uuid())
+  startTime DateTime // Exact start time of the appointment
+  endTime   DateTime // Exact end time of the appointment
+  status    BookingStatus @default(PENDING) // PENDING, CONFIRMED, CANCELED
+
+  // The Barber who will perform the service
+  barberId String
+  barber   Barber @relation(fields: [barberId], references: [id])
+
+  // The chosen Service
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
+
+  // Tenant Isolation: Direct link to the BarberShop
+  // Essential for the barbershop admin to see all their appointments
+  barberShopId String
+  barberShop   BarberShop @relation(fields: [barberShopId], references: [id])
+
+  // Customer Data (KISS: for now, just name/phone, no complex User table)
+  customerName  String
+  customerPhone String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Service {
-  id           String     @id @default(cuid())
-  name         String
-  description  String?
-  price        Decimal
-  duration     Int
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  price       Decimal
+  duration    Int
+  bookings    Booking[] // Back-relation for bookings
+
   barberShopId String
   barberShop   BarberShop @relation(fields: [barberShopId], references: [id])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+
 }
