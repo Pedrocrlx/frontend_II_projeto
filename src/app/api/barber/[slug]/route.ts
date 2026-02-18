@@ -10,7 +10,7 @@ export async function GET(
   try {
     const barber = await prisma.barberShop.findUnique({
       where: { slug },
-      include: { services: true },
+      include: { services: true, barbers: true },
     });
 
     if (!barber) {
