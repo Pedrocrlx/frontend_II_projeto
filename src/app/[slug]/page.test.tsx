@@ -3,7 +3,7 @@
  */
 import { notFound } from "next/navigation";
 import { BarberService } from "@/services/barberService";
-import BarberPage from "./page";
+import BarberPage, { generateMetadata } from "./page";
 import React from 'react';
 
 // Mock the services and modules
@@ -48,59 +48,283 @@ function findTextInReactTree(node: React.ReactNode, text: string | RegExp): bool
 }
 
 
+
+
+
 describe("BarberPage (Node Environment Test)", () => {
+
+
   beforeEach(() => {
+
+
     jest.resetAllMocks();
+
+
   });
+
+
+
+
 
   it("should generate a page structure containing the barber shop name", async () => {
+
+
     const mockBarberProfile = {
+
+
       id: "1",
+
+
       name: "Test Barber Shop",
+
+
       slug: "test-barber-shop",
+
+
       services: [{ id: "s1", name: "Haircut", duration: 30, price: 20 }],
+
+
       barbers: [{ id: "b1", name: "John Doe", description: "Master Barber" }],
+
+
     };
+
+
     mockBarberService.getProfileBySlug.mockResolvedValue(mockBarberProfile);
+
+
+
+
 
     // Await the Server Component to get the JSX structure
+
+
     const pageTree = await BarberPage({ params: { slug: "test-barber-shop" } });
 
+
+
+
+
     // Assert that the text exists somewhere in the component tree
+
+
     expect(findTextInReactTree(pageTree, "Test Barber Shop")).toBe(true);
+
+
     expect(findTextInReactTree(pageTree, "Haircut")).toBe(true);
+
+
     expect(findTextInReactTree(pageTree, "John Doe")).toBe(true);
+
+
   });
 
+
+
+
+
   it("should generate a page structure with 'no services' message", async () => {
+
+
     const mockBarberProfile = {
+
+
       id: "2",
+
+
       name: "Empty Barber Shop",
+
+
       slug: "empty-barber-shop",
+
+
       services: [],
+
+
       barbers: [],
+
+
     };
+
+
     mockBarberService.getProfileBySlug.mockResolvedValue(mockBarberProfile);
+
+
+
+
 
     const pageTree = await BarberPage({ params: { slug: "empty-barber-shop" } });
 
+
+
+
+
     expect(findTextInReactTree(pageTree, "Empty Barber Shop")).toBe(true);
+
+
     expect(findTextInReactTree(pageTree, "Nenhum serviço disponível de momento.")).toBe(true);
+
+
     expect(findTextInReactTree(pageTree, "Nenhum barbeiro disponível de momento.")).toBe(true);
+
+
   });
 
+
+
+
+
   it("should call notFound when the barber shop slug does not exist", async () => {
+
+
     mockBarberService.getProfileBySlug.mockResolvedValue(null);
+
+
+
+
 
     await BarberPage({ params: { slug: "non-existent-slug" } });
 
+
+
+
+
     expect(mockNotFound).toHaveBeenCalledTimes(1);
+
+
   });
 
+
+
+
+
   it("should call notFound for 'favicon.ico' slug", async () => {
+
+
     await BarberPage({ params: { slug: "favicon.ico" } });
+
+
     
+
+
     expect(mockNotFound).toHaveBeenCalledTimes(1);
+
+
     expect(mockBarberService.getProfileBySlug).not.toHaveBeenCalled();
+
+
   });
+
+
+});
+
+
+
+
+
+describe("generateMetadata", () => {
+
+
+  it("should return the correct metadata title when a barber is found", async () => {
+
+
+    const mockBarberProfile = {
+
+
+      id: "1",
+
+
+      name: "Test Barber Shop",
+
+
+      slug: "test-barber-shop",
+
+
+      services: [],
+
+
+      barbers: [],
+
+
+    };
+
+
+    mockBarberService.getProfileBySlug.mockResolvedValue(mockBarberProfile);
+
+
+
+
+
+    const metadata = await generateMetadata({
+
+
+      params: { slug: "test-barber-shop" },
+
+
+    });
+
+
+
+
+
+    expect(metadata).toEqual({
+
+
+      title: "BarberShop | Test Barber Shop",
+
+
+    });
+
+
+    expect(mockBarberService.getProfileBySlug).toHaveBeenCalledWith(
+
+
+      "test-barber-shop"
+
+
+    );
+
+
+  });
+
+
+
+
+
+  it("should return an empty metadata object when the barber is not found", async () => {
+
+
+    mockBarberService.getProfileBySlug.mockResolvedValue(null);
+
+
+
+
+
+    const metadata = await generateMetadata({
+
+
+      params: { slug: "non-existent-slug" },
+
+
+    });
+
+
+
+
+
+    expect(metadata).toEqual({});
+
+
+    expect(mockBarberService.getProfileBySlug).toHaveBeenCalledWith(
+
+
+      "non-existent-slug"
+
+
+    );
+
+
+  });
+
+
 });

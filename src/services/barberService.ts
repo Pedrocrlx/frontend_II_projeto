@@ -4,7 +4,9 @@ export interface Service {
   id: string;
   name: string;
   price: number;
+  description?: string | null;
   barberShopId: string;
+  duration: number; 
 }
 
 export interface Barber {

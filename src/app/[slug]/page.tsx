@@ -2,14 +2,33 @@ import { BarberService } from "@/services/barberService";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Metadata } from "next";
+import { BookingSheet } from "./_components/booking-sheet";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug } = params;
+  if (slug === "favicon.ico") return {};
+
+  const barber = await BarberService.getProfileBySlug(slug);
+
+  if (!barber) {
+    return {};
+  }
+
+  return {
+    title: `BarberShop | ${barber.name}`,
+  };
 }
 
 export default async function BarberPage({ params }: PageProps) {
-  const { slug } = await params;
-  
+  const { slug } = params;
+
   if (slug === "favicon.ico") return notFound();
 
   const barber = await BarberService.getProfileBySlug(slug);
@@ -28,21 +47,33 @@ export default async function BarberPage({ params }: PageProps) {
 
         <section className="space-y-4">
           <h2 className="text-xl font-semibold px-1">Serviços</h2>
-          
+
           <div className="grid gap-3">
             {barber.services && barber.services.length > 0 ? (
               barber.services.map((service) => (
-                <Card key={service.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={service.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardContent className="p-4 flex justify-between items-center">
                     <div>
                       <p className="font-medium text-lg">{service.name}</p>
-                      <p className="text-sm text-muted-foreground">{service.duration} min</p>
+                      <p className="text-sm text-muted-foreground">
+                        {service.duration} min
+                      </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      <span className="font-bold text-primary">
-                        {service.price}€
+                      <span className="font-bold text-primary text-lg">
+                        {Number(service.price)}€
                       </span>
-                      <Button size="sm">Agendar</Button>
+
+                      <BookingSheet
+                        service={{
+                          ...service,
+                          description: service.description ?? null,
+                        }}
+                        barbers={barber.barbers}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -60,12 +91,18 @@ export default async function BarberPage({ params }: PageProps) {
           <div className="grid gap-3">
             {barber.barbers && barber.barbers.length > 0 ? (
               barber.barbers.map((barber) => (
-                <Card key={barber.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={barber.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardContent className="p-4 flex justify-between items-center">
                     <div>
                       <p className="font-medium text-lg">{barber.name}</p>
-                      <p className="text-sm text-muted-foreground">{barber.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {barber.description}
+                      </p>
                     </div>
+
                     <div className="flex flex-col items-end gap-2">
                       <Button size="sm">Agendar</Button>
                     </div>
@@ -78,7 +115,7 @@ export default async function BarberPage({ params }: PageProps) {
               </p>
             )}
           </div>
-        </section>              
+        </section>
       </div>
     </div>
   );

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Chunk 2] - Dynamic Routing & SSR
+## [0.2.0] - 19/02/26 ✅
+### Added
+- Implemented dynamic routing for barber shop pages (`src/app/[slug]/page.tsx`).
+- Corrected type definitions for page properties in `src/app/[slug]/page.tsx`.
+- Added `generateMetadata` function for dynamic SEO titles on barber shop pages.
+- Enhanced unit test coverage for `BarberPage` component, including metadata generation.
+
 ## [Chunk 1] - Database & API Foundation
 ## [0.1.0] - 13/06/26 ✅
 ### Added
