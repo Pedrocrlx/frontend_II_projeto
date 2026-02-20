@@ -1,28 +1,32 @@
-# Start infrastructure (Postgres + Adminer for local development)
-up:
+.PHONY: help
+help: ## Show this help message
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+up: ## Start infrastructure (Postgres + Adminer for local development)
 	docker compose up -d
 
-# Stop infrastructure
-down:
+down: ## Stop infrastructure
 	docker compose down
 
+clean:
+	docker compose down --volumes --remove-orphans
+
 # Create official migration (Use this when you change schema.prisma)
-# It asks for a name, so run it manually in the terminal
-db-migrate:
+db-migrate: ## It asks for a name, so run it manually in the terminal
 	bunx prisma migrate dev
 
-# Open Prisma Data Studio to add data on the database
-studio:
+
+studio: ## Open Prisma Data Studio to add data on the database
 	bunx prisma studio
 
-# Setup project for the first time or after pulling updates
-# We add a small sleep to ensure DB is ready before migrating
-setup: up
+
+## We add a small sleep to ensure DB is ready before migrating
+setup: up ## Setup project for the first time or after pulling updates
 	sleep 5
 	bunx prisma migrate dev
 
-# If you really want one command for everything (slower boot)
-start-all: up
+
+start-all: up ## If you really want one command for everything (slower boot)
 	sleep 3
 	bunx prisma migrate dev
 	bun dev

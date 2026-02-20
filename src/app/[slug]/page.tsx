@@ -3,16 +3,16 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Metadata } from "next";
-import { BookingSheet } from "./_components/booking-sheet";
+import { BookingSheet } from "./_components/BookingSheet";
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   if (slug === "favicon.ico") return {};
 
   const barber = await BarberService.getProfileBySlug(slug);
@@ -27,7 +27,7 @@ export async function generateMetadata({
 }
 
 export default async function BarberPage({ params }: PageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   if (slug === "favicon.ico") return notFound();
 
@@ -51,32 +51,30 @@ export default async function BarberPage({ params }: PageProps) {
           <div className="grid gap-3">
             {barber.services && barber.services.length > 0 ? (
               barber.services.map((service) => (
-                <Card
+                <div
                   key={service.id}
-                  className="hover:shadow-md transition-shadow"
+                  className="flex items-center justify-between p-4 border-b"
                 >
-                  <CardContent className="p-4 flex justify-between items-center">
-                    <div>
-                      <p className="font-medium text-lg">{service.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {service.duration} min
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <span className="font-bold text-primary text-lg">
-                        {Number(service.price)}€
-                      </span>
+                  <div>
+                    <h3 className="font-bold">{service.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      {Intl.NumberFormat("pt-PT", {
+                        style: "currency",
+                        currency: "EUR",
+                      }).format(Number(service.price))}
+                    </p>
+                  </div>
 
-                      <BookingSheet
-                        service={{
-                          ...service,
-                          description: service.description ?? null,
-                        }}
-                        barbers={barber.barbers}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+                  <BookingSheet
+                    service={{
+                      ...service,
+                      description: service.description ?? null,
+                      price: Number(service.price),
+                      barberShopId: barber.id,
+                    }}
+                    barbers={barber.barbers}
+                  />
+                </div>
               ))
             ) : (
               <p className="text-center text-muted-foreground py-10">
