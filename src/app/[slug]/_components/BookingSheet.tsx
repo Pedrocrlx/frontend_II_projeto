@@ -1,12 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { generateTimeSlots } from "../../../lib/utils/time-slot";
-import { createBooking } from "../../_actions/create-booking";
+import {
+  checkTimeSlotAvailability,
+  clientHasBookingAtTime,
+  createBooking,
+} from "../../_actions/create-booking";
+import { toast } from "sonner";
 
 interface BookingSheetProps {
   service: {
@@ -34,7 +51,88 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleBookingSubmit = async () => {
-    if (!date || !selectedBarber || !selectedTime || !customerName || !customerPhone) return;
+    if (
+      !date ||
+      !selectedBarber ||
+      !selectedTime ||
+      !customerName ||
+      !customerPhone
+    ) {
+      toast.warning("Please fill in all fields.");
+      return;
+    }
+
+    if (selectedTime === "") {
+      toast.warning("Please select a time slot.");
+      return;
+    }
+
+    if (customerName.trim() === "" || customerPhone.trim() === "") {
+      toast.warning("Please fill in your name and phone number.");
+      return;
+    } else if (customerName.trim() === "") {
+      toast.warning("Please fill in your name.");
+      return;
+    } else if (customerPhone.trim() === "") {
+      toast.warning("Please fill in your phone number.");
+      return;
+    }
+
+    if (selectedBarber) {
+      const [hours, minutes] = selectedTime.split(":").map(Number);
+      if (hours < 9 || hours >= 19 || (hours === 18 && minutes > 30)) {
+        alert(
+          "Por favor, selecione um horário dentro do horário de funcionamento (9:00 - 19:30).",
+        );
+        return;
+      }
+
+      const isTimeSlotAvailable = await checkTimeSlotAvailability({
+        serviceId: service.id,
+        barberId: selectedBarber,
+        barberShopId: service.barberShopId,
+        startTime: new Date(date.setHours(hours, minutes, 0, 0)),
+        duration: service.duration,
+        customerName,
+        customerPhone,
+      });
+
+      if (!isTimeSlotAvailable) {
+        toast.warning(
+          "Sorry, this time slot is already booked for the selected barber. Please choose another time slot.",
+        );
+        return;
+      }
+    }
+
+    if (customerPhone.trim() !== "") {
+      const phoneRegex = /^\+351[1-9][0-9]{8}$/;
+      if (!phoneRegex.test(customerPhone)) {
+        alert(
+          "Por favor, insira um número de telefone válido Ex:(+351 912-345-678).",
+        );
+        return;
+      }
+    }
+
+    if (customerPhone) {
+      const [hours, minutes] = selectedTime.split(":").map(Number);
+      const clientHasBooking = await clientHasBookingAtTime({
+        serviceId: service.id,
+        barberId: selectedBarber,
+        barberShopId: service.barberShopId,
+        startTime: new Date(date.setHours(hours, minutes, 0, 0)),
+        duration: service.duration,
+        customerName,
+        customerPhone,
+      });
+      if (clientHasBooking) {
+        alert(
+          "Você já tem uma reserva para este horário. Por favor, escolha outro horário ou cancele sua reserva atual.",
+        );
+        return;
+      }
+    }
 
     setIsSubmitting(true);
     try {
@@ -65,16 +163,16 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
       <DrawerTrigger asChild>
         <Button size="sm">Agendar</Button>
       </DrawerTrigger>
-      <DrawerContent className="h-[90vh]">
+      <DrawerContent className="h-[90vh] ">
         <DrawerHeader>
           <DrawerTitle>Agendar {service.name}</DrawerTitle>
         </DrawerHeader>
-        
+
         <div className="p-4 space-y-4 overflow-y-auto">
           <div className="space-y-2">
             <label className="text-sm font-bold">Nome</label>
-            <input 
-              className="w-full p-2 border rounded-md" 
+            <input
+              className="w-full p-2 border rounded-md"
               placeholder="Seu nome"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
@@ -83,9 +181,9 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
 
           <div className="space-y-2">
             <label className="text-sm font-bold">Telefone</label>
-            <input 
-              className="w-full p-2 border rounded-md" 
-              placeholder="Seu telefone"
+            <input
+              className="w-full p-2 border rounded-md"
+              placeholder="+351 912-345-678"
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
             />
@@ -99,14 +197,16 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
               </SelectTrigger>
               <SelectContent>
                 {barbers.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex flex-col items-center">
-             <Calendar mode="single" selected={date} onSelect={setDate} />
+            <Calendar mode="single" selected={date} onSelect={setDate} />
           </div>
 
           {date && selectedBarber && (
@@ -123,12 +223,12 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
             </div>
           )}
 
-          <Button 
+          <Button
             disabled={!selectedTime || !customerName || isSubmitting}
             className="w-full mt-4"
             onClick={handleBookingSubmit}
           >
-            {isSubmitting ? "Enviando..." : "Confirmar"}
+            {isSubmitting ? "A enviar..." : "Confirmar"}
           </Button>
         </div>
       </DrawerContent>

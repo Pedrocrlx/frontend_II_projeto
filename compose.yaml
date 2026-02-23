@@ -9,12 +9,5 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./initdb.d:/docker-entrypoint-initdb.d
 
-  adminer:
-    image: adminer
-    ports:
-      - 8080:8080
-    depends_on:
-      - database
-
 volumes:
   db_data:

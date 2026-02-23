@@ -13,10 +13,55 @@ interface CreateBookingParams {
   customerPhone: string;
 }
 
-export async function createBooking(params: CreateBookingParams) {
+export async function checkTimeSlotAvailability(params: CreateBookingParams) {
   try {
     const endTime = new Date(params.startTime.getTime() + params.duration * 60000);
 
+    const overlappingBookings = await prisma.booking.findMany({
+      where: {
+        barberId: params.barberId,
+        startTime: {
+          lt: endTime,
+        },
+        endTime: {
+          gt: params.startTime,
+        },
+      },
+    });
+
+    return overlappingBookings.length === 0;
+  } catch (error) {
+    console.error("Failed to check availability:", error);
+    return false;
+  }
+}
+
+export async function clientHasBookingAtTime(params: CreateBookingParams) {
+  try {
+    const endTime = new Date(params.startTime.getTime() + params.duration * 60000);
+
+    const overlappingBookings = await prisma.booking.findMany({
+      where: {
+        customerPhone: params.customerPhone,
+        startTime: {
+          lt: endTime,
+        },
+        endTime: {
+          gt: params.startTime,
+        },
+      },
+    });
+
+    return overlappingBookings.length > 0;
+  } catch (error) {
+    console.error("Failed to check client's booking:", error);
+    return false;
+  }
+}
+
+export async function createBooking(params: CreateBookingParams) {
+  try {
+    const endTime = new Date(params.startTime.getTime() + params.duration * 60000);
     await prisma.booking.create({
       data: {
         startTime: params.startTime,
