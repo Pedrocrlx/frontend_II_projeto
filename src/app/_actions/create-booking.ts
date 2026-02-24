@@ -13,7 +13,13 @@ interface CreateBookingParams {
   customerPhone: string;
 }
 
-export async function checkTimeSlotAvailability(params: CreateBookingParams) {
+interface ServerActionResponse {
+  status: 200 | 400 | 409 | 500;
+  message: string;
+  data?: any;
+}
+
+export async function checkTimeSlotAvailability(params: CreateBookingParams): Promise<ServerActionResponse> {
   try {
     const endTime = new Date(params.startTime.getTime() + params.duration * 60000);
 
@@ -29,14 +35,27 @@ export async function checkTimeSlotAvailability(params: CreateBookingParams) {
       },
     });
 
-    return overlappingBookings.length === 0;
+    if (overlappingBookings.length > 0) {
+      return {
+        status: 409,
+        message: "Time slot is already booked"
+      };
+    }
+
+    return {
+      status: 200,
+      message: "Time slot is available"
+    };
   } catch (error) {
     console.error("Failed to check availability:", error);
-    return false;
+    return {
+      status: 500,
+      message: "Unable to check availability"
+    };
   }
 }
 
-export async function clientHasBookingAtTime(params: CreateBookingParams) {
+export async function clientHasBookingAtTime(params: CreateBookingParams): Promise<ServerActionResponse> {
   try {
     const endTime = new Date(params.startTime.getTime() + params.duration * 60000);
 
@@ -52,14 +71,27 @@ export async function clientHasBookingAtTime(params: CreateBookingParams) {
       },
     });
 
-    return overlappingBookings.length > 0;
+    if (overlappingBookings.length > 0) {
+      return {
+        status: 409,
+        message: "Client has existing booking at this time"
+      };
+    }
+
+    return {
+      status: 200,
+      message: "No existing booking found"
+    };
   } catch (error) {
     console.error("Failed to check client's booking:", error);
-    return false;
+    return {
+      status: 500,
+      message: "Unable to verify existing bookings"
+    };
   }
 }
 
-export async function createBooking(params: CreateBookingParams) {
+export async function createBooking(params: CreateBookingParams): Promise<ServerActionResponse> {
   try {
     const endTime = new Date(params.startTime.getTime() + params.duration * 60000);
     await prisma.booking.create({
@@ -75,9 +107,15 @@ export async function createBooking(params: CreateBookingParams) {
     });
 
     revalidatePath("/[slug]");
-    return { success: true };
+    return {
+      status: 200,
+      message: "Booking created successfully"
+    };
   } catch (error) {
     console.error("Failed to create booking:", error);
-    return { success: false };
+    return {
+      status: 500,
+      message: "Failed to create booking"
+    };
   }
 }

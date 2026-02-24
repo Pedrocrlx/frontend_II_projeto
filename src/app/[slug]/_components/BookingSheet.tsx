@@ -50,97 +50,85 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
   const [customerPhone, setCustomerPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Validation helper: Check all required fields are non-empty
+  const validateRequiredFields = (): boolean => {
+    if (!date) return false;
+    if (!selectedBarber || selectedBarber.trim() === "") return false;
+    if (!selectedTime || selectedTime.trim() === "") return false;
+    if (!customerName || customerName.trim() === "") return false;
+    if (!customerPhone || customerPhone.trim() === "") return false;
+    return true;
+  };
+
+  // Validation helper: Check phone matches Portuguese format
+  const validatePhoneFormat = (phone: string): boolean => {
+    const phoneRegex = /^\+351[1-9][0-9]{8}$/;
+    return phoneRegex.test(phone);
+  };
+
+  // Validation helper: Check if time is within business hours (9:00 AM - 7:30 PM)
+  const validateBusinessHours = (time: string): boolean => {
+    const [hours, minutes] = time.split(":").map(Number);
+    if (hours < 9 || hours >= 19 || (hours === 18 && minutes > 30)) {
+      return false;
+    }
+    return true;
+  };
+
   const handleBookingSubmit = async () => {
-    if (
-      !date ||
-      !selectedBarber ||
-      !selectedTime ||
-      !customerName ||
-      !customerPhone
-    ) {
-      toast.warning("Please fill in all fields.");
+    // Validation 1: Check all required fields are filled
+    if (!validateRequiredFields()) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
-    if (selectedTime === "") {
-      toast.warning("Please select a time slot.");
+    // Validation 2: Check specific empty fields with detailed messages
+    if (!customerName || customerName.trim() === "") {
+      toast.error("Please enter your name");
       return;
     }
 
-    if (customerName.trim() === "" || customerPhone.trim() === "") {
-      toast.warning("Please fill in your name and phone number.");
-      return;
-    } else if (customerName.trim() === "") {
-      toast.warning("Please fill in your name.");
-      return;
-    } else if (customerPhone.trim() === "") {
-      toast.warning("Please fill in your phone number.");
+    if (!customerPhone || customerPhone.trim() === "") {
+      toast.error("Please enter your phone number");
       return;
     }
 
-    if (selectedBarber) {
-      const [hours, minutes] = selectedTime.split(":").map(Number);
-      if (hours < 9 || hours >= 19 || (hours === 18 && minutes > 30)) {
-        alert(
-          "Por favor, selecione um horário dentro do horário de funcionamento (9:00 - 19:30).",
-        );
-        return;
-      }
-
-      const isTimeSlotAvailable = await checkTimeSlotAvailability({
-        serviceId: service.id,
-        barberId: selectedBarber,
-        barberShopId: service.barberShopId,
-        startTime: new Date(date.setHours(hours, minutes, 0, 0)),
-        duration: service.duration,
-        customerName,
-        customerPhone,
-      });
-
-      if (!isTimeSlotAvailable) {
-        toast.warning(
-          "Sorry, this time slot is already booked for the selected barber. Please choose another time slot.",
-        );
-        return;
-      }
+    if (!selectedBarber || selectedBarber.trim() === "") {
+      toast.error("Please select a barber");
+      return;
     }
 
-    if (customerPhone.trim() !== "") {
-      const phoneRegex = /^\+351[1-9][0-9]{8}$/;
-      if (!phoneRegex.test(customerPhone)) {
-        alert(
-          "Por favor, insira um número de telefone válido Ex:(+351 912-345-678).",
-        );
-        return;
-      }
+    if (!selectedTime || selectedTime.trim() === "") {
+      toast.error("Please select a time slot");
+      return;
     }
 
-    if (customerPhone) {
-      const [hours, minutes] = selectedTime.split(":").map(Number);
-      const clientHasBooking = await clientHasBookingAtTime({
-        serviceId: service.id,
-        barberId: selectedBarber,
-        barberShopId: service.barberShopId,
-        startTime: new Date(date.setHours(hours, minutes, 0, 0)),
-        duration: service.duration,
-        customerName,
-        customerPhone,
-      });
-      if (clientHasBooking) {
-        alert(
-          "Você já tem uma reserva para este horário. Por favor, escolha outro horário ou cancele sua reserva atual.",
-        );
-        return;
-      }
+    // Validation 3: Check phone format
+    if (!validatePhoneFormat(customerPhone)) {
+      toast.error("Please enter a valid phone number (format: +351 912345678)");
+      return;
+    }
+
+    // Validation 4: Check business hours
+    if (!validateBusinessHours(selectedTime)) {
+      toast.error("Please select a time between 9:00 AM and 7:30 PM");
+      return;
     }
 
     setIsSubmitting(true);
+    
+    // Set up informational toast for long-running operations (>3 seconds)
+    const longRunningToastTimeout = setTimeout(() => {
+      toast.info("Processing your booking, please wait...");
+    }, 3000);
+    
     try {
       const [hours, minutes] = selectedTime.split(":").map(Number);
-      const start = new Date(date);
+      const start = new Date(date!);
       start.setHours(hours, minutes, 0, 0);
 
-      const result = await createBooking({
+      // Check time slot availability
+      const availabilityResult = await checkTimeSlotAvailability({
         serviceId: service.id,
         barberId: selectedBarber,
         barberShopId: service.barberShopId,
@@ -150,10 +138,65 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
         customerPhone,
       });
 
-      if (result.success) {
-        alert("Booking confirmed!");
+      if (availabilityResult.status === 409) {
+        toast.error("This time slot is already booked. Please select another time");
+        return;
+      }
+
+      if (availabilityResult.status === 500) {
+        toast.error("Unable to check availability. Please try again");
+        return;
+      }
+
+      // Check if client has booking at this time
+      const clientBookingResult = await clientHasBookingAtTime({
+        serviceId: service.id,
+        barberId: selectedBarber,
+        barberShopId: service.barberShopId,
+        startTime: start,
+        duration: service.duration,
+        customerName,
+        customerPhone,
+      });
+
+      if (clientBookingResult.status === 409) {
+        toast.error("You already have a booking at this time. Please choose a different time or cancel your existing booking");
+        return;
+      }
+
+      if (clientBookingResult.status === 500) {
+        toast.error("Unable to verify existing bookings. Please try again");
+        return;
+      }
+
+      // Create the booking
+      const createResult = await createBooking({
+        serviceId: service.id,
+        barberId: selectedBarber,
+        barberShopId: service.barberShopId,
+        startTime: start,
+        duration: service.duration,
+        customerName,
+        customerPhone,
+      });
+
+      if (createResult.status === 200) {
+        toast.success("Booking confirmed successfully!");
+        // Reset form
+        setCustomerName("");
+        setCustomerPhone("");
+        setSelectedBarber("");
+        setSelectedTime("");
+        setDate(new Date());
+      } else if (createResult.status === 400) {
+        toast.error(createResult.message);
+      } else if (createResult.status === 409) {
+        toast.error("This time slot was just booked by someone else. Please select another time");
+      } else if (createResult.status === 500) {
+        toast.error("Failed to create booking. Please try again or contact support");
       }
     } finally {
+      clearTimeout(longRunningToastTimeout);
       setIsSubmitting(false);
     }
   };

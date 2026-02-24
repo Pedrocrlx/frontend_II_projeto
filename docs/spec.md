@@ -1,81 +1,88 @@
 # Project Specification: BarberBrand SaaS
 
 ## 1. Overview
-A multi-tenant SaaS platform enabling barbershops/salons to have fully customizable, high-performance websites.
-**Goal:** Deliver a "White Label" experience where each barber has their own branding and domain, while maximizing SEO scores via Server-Side Rendering (SSR).
+A multi-tenant SaaS platform enabling barbershops to have fully customizable, high-performance websites.
+**Goal:** Deliver a "White Label" experience where each barber shop has its own branding and domain, maximizing SEO scores via Server-Side Rendering (SSR).
 
 ## 2. Tech Stack & Requirements Mapping
-* **Runtime & Package Manager:** **Bun**
-    * *Why:* Faster package installation, startup times, and built-in test runner compatibility.
-* **Core Framework:** **Next.js** (App Router)
-    * *Satisfies:* SSR, API Routes, Navigation, SEO capabilities.
-* **Language:** **TypeScript**
-    * *Satisfies:* Type safety, scalability, and better developer experience with Prisma.
-* **HTTP Client:** **Axios**
-    * *Satisfies:* Standardized API calls, interceptors for auth tokens, consistent error handling.
-* **Testing:** **Jest** + **React Testing Library**
-    * *Satisfies:* Unit Testing requirement. (Using `bun-jest` or native Bun test runner where applicable).
-* **Styling:** **Tailwind CSS**
-    * *Satisfies:* Responsive design, utility-first styling for dynamic theming variables.
-* **Authentication:** **NextAuth.js** (or similar Auth provider).
-* **State Management:** **React Context API** (Global Theme) & **React Query** (Server State).
+* **Runtime & Package Manager:** **Bun** (Fast installation and native test runner).
+* **Core Framework:** **Next.js 14+** (App Router).
+* **Language:** **TypeScript** (Type safety for Prisma and Redux).
+* **UI & Styling:**
+    * **Tailwind CSS** (Utility-first styling).
+    * **Shadcn/ui** (Base components).
+    * **Sonner** (Toast notifications for feedback).
+* **State Management:** **Redux Toolkit (RTK)**
+    * *Purpose:* Global Theme management, real-time preview for the customizer, and persistent tenant configuration.
+* **Database & ORM:** **Prisma** + **PostgreSQL**.
+* **Authentication:** **Supabase Auth**.
+* **HTTP Client:** **Axios** (Service Layer pattern for API/Server Actions).
 
 ## 3. Architecture
 
 ### 3.1 Database Strategy
-* **Database Engine:** **PostgreSQL**
-    * **Development Environment:** Runs inside a local **Docker Container** (via `docker-compose.yml`). This ensures a clean, isolated environment that mimics production.
-    * **Production Environment:** Managed PostgreSQL Service (e.g., **Supabase** or AWS RDS).
-* **ORM & Data Access:** **Prisma**
-    * **Role:** Acts as the bridge between Next.js (TypeScript) and PostgreSQL.
-    * **Responsibilities:** * Schema Definition (`schema.prisma`).
-        * Database Migrations (Version control for DB structure).
-        * Type-safe Querying (CRUD operations).
-* **Tenant Isolation:** Application-Level Isolation.
-    * Every table (e.g., `Service`, `Booking`, `Customer`) includes a `tenantId` (or `barberShopId`) foreign key.
-    * API routes must always filter queries by this ID.
+* **Local Development:** **PostgreSQL** running in a **Docker Container** or **Supabase CLI** (local emulation).
+* **Production:** **Supabase** (Managed PostgreSQL).
+* **ORM:** **Prisma** for type-safe queries and migrations.
+* **Tenant Isolation:** Application-Level Isolation using `barberShopId` on all related entities (`Service`, `Barber`, `Booking`).
 
-### 3.2 DevOps & Infrastructure (Future Roadmap)
-* **Containerization:** **Docker** (Multi-stage builds for optimized Next.js images).
-* **Orchestration:** **Kubernetes (K8s)** via Minikube (Local) or Cloud Provider.
-* **IaC:** **Terraform** for resource provisioning.
-* **CI/CD:** **GitHub Actions** pipelines (Lint -> Test -> Build -> Deploy).
+### 3.2 Authentication & Multi-tenancy
+* **Provider:** **Supabase Auth**.
+* **Identity Logic:** Users (Owners) are linked to a `BarberShop` record.
+* **Security:** Session must include `barberShopId` to ensure owners only access their respective dashboard data.
+
+### 3.3 Storage Strategy
+* **Service:** **Supabase Storage**.
+* **Usage:** Hosting Barber profile pictures and BarberShop logos.
+* **Integration:** Next.js Image optimization with Supabase URL loader.
+
+### 3.4 Theming Engine (Redux Powered)
+* **Mechanism:** Dynamic CSS Variables (`--primary`, `--secondary`, etc.) injected at the root layout.
+* **RTK Slices:** `themeSlice` handles real-time updates for the customizer preview.
 
 ## 4. Feature Breakdown (MVP)
-1.  **Public Barber Page (Frontend - SSR):**
-    * Dynamic Theme Injection (CSS Variables for Logo, Colors).
-    * Services List & Pricing (Fetched via Prisma/API).
-    * SEO Meta Tags injection based on Tenant config.
-2.  **Admin Dashboard (Protected - CSR):**
-    * Authentication.
-    * CRUD Operations for Services and Shop Profile.
-    * Real-time Theme Customizer.
+
+### 4.1 Public Barber Page (SSR)
+* Dynamic SEO Meta Tags based on Shop configuration.
+* Service Listing & Booking Flow using `BookingSheet` (Shadcn Drawer).
+* Real-time availability validation via Server Actions.
+
+### 4.2 Admin Dashboard (Protected - CSR)
+* **Auth:** Login/Register via Supabase Auth.
+* **Management (CRUD):**
+    * **Services:** Manage catalog, pricing, and durations.
+    * **Barbers:** Manage staff profiles and photo uploads.
+    * **Bookings:** View and manage appointments calendar.
+* **Customizer:** Real-time UI to change colors, logos, and shop details, persisted in the DB.
 
 ## 5. Development Workflow (Chunked)
-We strictly follow a chunked development process. A chunk is closed only when requirements + **passing tests** + changelog are met.
 
-### Planned Chunks:
-* **Chunk 0: Initialization & Config**
-    * Setup Next.js with **Bun**.
-    * Configure **Jest** environment.
-    * Setup **Axios** instance.
-    * **Docker Setup:** Create `docker-compose.yml` to spin up local PostgreSQL.
-    * **Goal:** `bun dev` runs the app and `docker compose up` starts the database.
-* **Chunk 1: Database & API Foundation**
-    * Setup **Prisma**: Connect to local Docker Postgres.
-    * Define Schema: `BarberShop`, `Service` models.
-    * Run Migrations: `bunx prisma migrate dev`.
-    * Create API endpoints with Axios services.
-    * **Test:** Unit tests for API responses using Jest Mocks.
-* **Chunk 2: Dynamic Routing & SSR**
-    * Implement `[slug]` pages.
-    * **Test:** Verify correct JSON data injection based on URL.
-* **Chunk 3: Theming Engine**
-    * Implement ThemeContext.
-    * **Test:** Verify CSS variables update on state change.
-* **Chunk 4: Authentication & Dashboard**
-    * Protect routes.
-    * **Test:** Verify redirection for unauthenticated users.
-* **Chunk 5: DevOps & Containerization (Phase 2)**
-    * Create `Dockerfile` for the app.
-    * Setup GitHub Actions.
+### **Chunk 0: Initialization & Config** (COMPLETED)
+* Setup Next.js with Bun.
+* Docker setup for local Postgres.
+* Axios instance configuration.
+
+### **Chunk 1: Database & API Foundation** (COMPLETED)
+* Prisma models: `BarberShop`, `Service`, `Barber`, `Booking`.
+* Seed script (`dbdata.ts`) for development testing.
+
+### **Chunk 2: Public Page & Booking Logic** (IN PROGRESS)
+* SSR for `[slug]` pages.
+* `BookingSheet` component with validation (TimeSlot & Phone Regex).
+* Server Actions for booking persistence.
+
+### **Chunk 3: Redux & Global Theming** (NEXT)
+* Setup **Redux Toolkit** store and providers.
+* Implement `themeSlice` for dynamic color injection.
+* Migrate existing theme logic to Redux.
+
+### **Chunk 4: Supabase Auth & Admin Dashboard**
+* Setup **Supabase CLI** for local Auth/Storage development.
+* Implement login/protected routes.
+* Build the Admin Dashboard CRUDs (Barbers/Services).
+* Implement image upload to Supabase Storage.
+
+### **Chunk 5: Deployment & CI/CD**
+* Supabase Production DB connection.
+* GitHub Actions for Lint/Test/Build.
+* Vercel/Docker Deployment.
