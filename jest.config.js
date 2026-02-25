@@ -1,4 +1,4 @@
-const nextJest = require('next/jest')
+import nextJest from 'next/jest.js'
 
 const createJestConfig = nextJest({
   // Caminho para a tua app Next.js
@@ -15,4 +15,4 @@ const customJestConfig = {
   },
 }
 
-module.exports = createJestConfig(customJestConfig)
+export default createJestConfig(customJestConfig)

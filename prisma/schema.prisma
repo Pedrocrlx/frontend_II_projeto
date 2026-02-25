@@ -62,8 +62,9 @@ model Booking {
   barberShop   BarberShop @relation(fields: [barberShopId], references: [id])
 
   // Customer Data (KISS: for now, just name/phone, no complex User table)
-  customerName  String
-  customerPhone String
+  customerName    String
+  customerPhone   String // International format: e.g., "+351912345678"
+  customerCountry String? // ISO 3166-1 alpha-2 code: e.g., "PT", "BR", "GB", "DE", "FR"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

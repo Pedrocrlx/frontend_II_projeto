@@ -11,6 +11,7 @@ interface CreateBookingParams {
   duration: number;
   customerName: string;
   customerPhone: string;
+  customerCountry: string;
 }
 
 interface ServerActionResponse {
@@ -103,6 +104,7 @@ export async function createBooking(params: CreateBookingParams): Promise<Server
         barberShopId: params.barberShopId,
         customerName: params.customerName,
         customerPhone: params.customerPhone,
+        customerCountry: params.customerCountry,
       },
     });
 

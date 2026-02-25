@@ -67,6 +67,16 @@ Apply the latest database schema changes using Prisma.
 bunx prisma migrate dev
 ```
 
+### 6. Seed the Database (Optional)
+
+Populate the database with initial data for development.
+
+```bash
+bunx prisma db seed
+```
+
+This will create a sample barbershop called "Estilo & Classe Barbearia" with 3 barbers and 4 services.
+
 ## Development
 
 ### Running the Development Server
@@ -87,6 +97,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 -   `bun run lint`: Runs ESLint to check for code quality and style issues.
 -   `bun test`: Executes tests using Jest.
 -   `bun test:watch`: Runs Jest in interactive watch mode.
+-   `bunx prisma db seed`: Seeds the database with sample data.
+-   `bunx prisma studio`: Opens Prisma Studio to view and edit database data.
 
 ## Project Structure
 
