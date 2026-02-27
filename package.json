@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:static": "mv src/app/api ../api_temp 2>/dev/null || true && mv src/app/[slug] ../slug_temp 2>/dev/null || true && next build && mv ../api_temp src/app/api 2>/dev/null || true && mv ../slug_temp src/app/[slug] 2>/dev/null || true",
     "start": "next start",
     "lint": "next lint",
     "test": "jest --testEnvironment=jsdom",
     "test:watch": "jest --watch",
-    "export": "next build && touch out/.nojekyll"
+    "export": "bun run build:static && touch out/.nojekyll"
   },
   "prisma": {
     "seed": "bun prisma/seed.ts"

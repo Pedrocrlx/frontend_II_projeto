@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   },
   basePath: process.env.NODE_ENV === 'production' ? '/frontend_II_projeto' : '',
   assetPrefix: process.env.NODE_ENV === 'production' ? '/frontend_II_projeto/' : '',
+  // Skip API routes and dynamic pages during static export
+  typescript: {
+    ignoreBuildErrors: false,
+  },
 };
 
 export default nextConfig;
