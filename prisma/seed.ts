@@ -45,7 +45,7 @@ async function main() {
   });
 
   console.log("\nTotal barbershops in database:", allBarberShops.length);
-  allBarberShops.forEach((shop, index) => {
+  allBarberShops.forEach((shop: typeof allBarberShops[0], index: number) => {
     console.log(`\n${index + 1}. ${shop.name}`);
     console.log(`   Slug: ${shop.slug}`);
     console.log(`   Barbers: ${shop.barbers.length}`);
