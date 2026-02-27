@@ -1,8 +1,8 @@
-# Project Specification: BarberBrand SaaS
+# Project Specification: Grid SaaS
 
 ## 1. Overview
-A multi-tenant SaaS platform enabling barbershops to have fully customizable, high-performance websites.
-**Goal:** Deliver a "White Label" experience where each barber shop has its own branding and domain, maximizing SEO scores via Server-Side Rendering (SSR).
+Grid is a multi-tenant SaaS platform that enables barbershops to create professional booking websites with organized scheduling.
+**Goal:** Deliver a structured, precise booking experience where each barbershop has its own branded page with a unique URL, maximizing SEO scores via Server-Side Rendering (SSR). Grid brings order to appointment management through smart calendar organization and international booking support.
 
 ## 2. Tech Stack & Requirements Mapping
 * **Runtime & Package Manager:** **Bun** (Fast installation and native test runner).
@@ -50,9 +50,13 @@ A multi-tenant SaaS platform enabling barbershops to have fully customizable, hi
 * Smart calendar with availability filtering.
 
 ### 4.2 Landing & Marketing Pages
-* **Homepage:** Hero, features, how it works, pricing CTA.
-* **Pricing Page:** Plan comparison, 14-day trial, FAQ.
-* **Legal Pages:** Terms of Service, Privacy Policy.
+* **Homepage:** 
+  * Hero: "Your Barbershop Schedule, Perfectly Organized"
+  * Features showcase emphasizing organization and precision
+  * How it works (3-step process)
+  * Pricing CTA with 14-day trial
+* **Pricing Page:** Plan comparison, 14-day trial badge, FAQ.
+* **Legal Pages:** Terms of Service, Privacy Policy, Contact.
 
 ### 4.3 Authentication & Subscription
 * **Auth:** Supabase Auth (signup, login, email verification).

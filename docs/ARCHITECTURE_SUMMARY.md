@@ -1,14 +1,19 @@
-# BarberBrand - Architecture Summary
+# Grid - Architecture Summary
 
 ## Vision
 
-A multi-tenant SaaS platform where barbershop owners can create professional booking websites in minutes, with international support and smart availability management.
+Grid is a multi-tenant SaaS platform where barbershop owners can create professional booking websites with organized scheduling. The platform brings structure and precision to appointment management through smart calendar organization and international booking support.
+
+**Brand Identity:**
+- Name: Grid
+- Tagline: "Your schedule, organized"
+- Concept: The perfect intersection of time slots and appointments
 
 ## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         BARBERBRAND SAAS                            │
+│                            GRID SAAS                                │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -386,4 +391,5 @@ Active Subscription
 
 **Last Updated:** 2026-02-27  
 **Version:** 0.3.0  
-**Status:** Chunk 2 Complete, Chunk 3 Next
+**Status:** Chunk 2 Complete, Chunk 3 Next  
+**Brand:** Grid - Your schedule, organized

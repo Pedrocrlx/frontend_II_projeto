@@ -1,4 +1,4 @@
-# BarberBrand - Quick Reference Guide
+# Grid - Quick Reference Guide
 
 ## Documentation Structure
 
@@ -25,7 +25,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     BarberBrand SaaS                        │
+│                         Grid SaaS                           │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  Landing Page (/)                                           │

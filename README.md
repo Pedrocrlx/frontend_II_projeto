@@ -1,6 +1,10 @@
-# BarberBrand
+# Grid
 
-BarberBrand is a multi-tenant SaaS platform designed for barbershops and salons, enabling them to create and manage their own fully customizable, high-performance websites. The platform is built with a focus on SEO, performance, and a "White Label" experience for each tenant.
+Grid is a multi-tenant SaaS platform designed for barbershops, enabling them to create professional booking websites with organized scheduling. The platform brings structure and precision to appointment management, featuring smart calendar organization, international booking support, and a clean booking experience for customers.
+
+**Tagline:** Your schedule, organized.
+
+Grid represents the perfect intersection of time slots and appointments - a visual metaphor for organized scheduling. The platform helps barbershops manage bookings with precision, preventing double bookings and providing a seamless experience for both shop owners and their customers.
 
 ## Tech Stack
 
