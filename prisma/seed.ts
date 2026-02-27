@@ -1,9 +1,9 @@
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
-  console.log("🌱 Starting database seed...");
+  console.log("Starting database seed...");
 
-  // Criar a barbershop "Estilo & Classe"
+  // Create barbershop "Estilo & Classe"
   const shop = await prisma.barberShop.create({
     data: {
       slug: "EstiloClasse",
@@ -30,12 +30,12 @@ async function main() {
     },
   });
 
-  console.log("✅ Barbershop criada com sucesso:", shop.name);
-  console.log("📍 Slug:", shop.slug);
-  console.log("💈 Barbeiros:", 3);
-  console.log("✂️  Serviços:", 4);
+  console.log("Barbershop created successfully:", shop.name);
+  console.log("Slug:", shop.slug);
+  console.log("Barbers:", 3);
+  console.log("Services:", 4);
 
-  // Listar todas as barbershops
+  // List all barbershops
   const allBarberShops = await prisma.barberShop.findMany({
     include: {
       barbers: true,
@@ -44,22 +44,22 @@ async function main() {
     orderBy: { createdAt: "asc" },
   });
 
-  console.log("\n📊 Total de barbershops no banco:", allBarberShops.length);
+  console.log("\nTotal barbershops in database:", allBarberShops.length);
   allBarberShops.forEach((shop, index) => {
     console.log(`\n${index + 1}. ${shop.name}`);
     console.log(`   Slug: ${shop.slug}`);
-    console.log(`   Barbeiros: ${shop.barbers.length}`);
-    console.log(`   Serviços: ${shop.services.length}`);
+    console.log(`   Barbers: ${shop.barbers.length}`);
+    console.log(`   Services: ${shop.services.length}`);
   });
 }
 
 main()
   .then(async () => {
-    console.log("\n✨ Seed concluído com sucesso!");
+    console.log("\nSeed completed successfully!");
     await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error("\n❌ Erro durante o seed:", e);
+    console.error("\nError during seed:", e);
     await prisma.$disconnect();
     process.exit(1);
   });
