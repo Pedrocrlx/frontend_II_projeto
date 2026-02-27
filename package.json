@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest --testEnvironment=jsdom",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "export": "next build && touch out/.nojekyll"
   },
   "prisma": {
     "seed": "bun prisma/seed.ts"
