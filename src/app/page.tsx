@@ -1,6 +1,16 @@
-export default function Home() {
+import { FinalCTA, Pricing, HowItWorks, Features, Stats, Hero, Navbar, Footer } from "../components/landing";
+
+export default function LandingPage() {
   return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      </div>
+    <div className="bg-white text-slate-700">
+      <Navbar />
+      <Hero />
+      <Stats />
+      <Features />
+      <HowItWorks />
+      <Pricing />
+      <FinalCTA />
+      <Footer />
+    </div>
   );
 }
