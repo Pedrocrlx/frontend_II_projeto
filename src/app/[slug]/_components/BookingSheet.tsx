@@ -284,27 +284,41 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
           Book Now
         </button>
       </DrawerTrigger>
-      <DrawerContent className="h-[90vh] ">
-        <DrawerHeader>
-          <DrawerTitle>Agendar {service.name}</DrawerTitle>
+      <DrawerContent className="h-[90vh]">
+        <DrawerHeader className="border-b border-slate-100">
+          <DrawerTitle className="text-2xl font-extrabold text-slate-900">
+            Book {service.name}
+          </DrawerTitle>
+          <p className="text-sm text-slate-600 mt-1">
+            {Intl.NumberFormat("pt-PT", {
+              style: "currency",
+              currency: "EUR",
+            }).format(service.price)} • {service.duration} minutes
+          </p>
         </DrawerHeader>
 
-        <div className="p-4 space-y-4 overflow-y-auto">
+        <div className="p-6 space-y-6 overflow-y-auto">
+          {/* Name Input */}
           <div className="space-y-2">
-            <label className="text-sm font-bold">Nome</label>
+            <label className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              Your Name
+            </label>
             <input
-              className="w-full p-2 border rounded-md"
-              placeholder="Seu nome"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+              placeholder="Enter your full name"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
             />
           </div>
 
+          {/* Country Select */}
           <div className="space-y-2">
-            <label className="text-sm font-bold">País</label>
+            <label className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              Country
+            </label>
             <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um país" />
+              <SelectTrigger className="w-full px-4 py-3 border border-slate-200 rounded-xl">
+                <SelectValue placeholder="Select your country" />
               </SelectTrigger>
               <SelectContent>
                 {Object.values(COUNTRY_CONFIGS).map((country) => (
@@ -316,14 +330,17 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
             </Select>
           </div>
 
+          {/* Phone Input */}
           <div className="space-y-2">
-            <label className="text-sm font-bold">Telefone</label>
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-2 border rounded-md bg-gray-50 text-gray-700 font-medium">
+            <label className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              Phone Number
+            </label>
+            <div className="flex items-center gap-3">
+              <span className="px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 font-bold text-sm">
                 {COUNTRY_CONFIGS[selectedCountry].dialCode}
               </span>
               <input
-                className="flex-1 p-2 border rounded-md"
+                className="flex-1 px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
                 placeholder={COUNTRY_CONFIGS[selectedCountry].placeholder}
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
@@ -332,11 +349,14 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
             </div>
           </div>
 
+          {/* Barber Select */}
           <div className="space-y-2">
-            <label className="text-sm font-bold">Profissional</label>
+            <label className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              Choose Your Barber
+            </label>
             <Select onValueChange={setSelectedBarber}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um barbeiro" />
+              <SelectTrigger className="w-full px-4 py-3 border border-slate-200 rounded-xl">
+                <SelectValue placeholder="Select a barber" />
               </SelectTrigger>
               <SelectContent>
                 {barbers.map((b) => (
@@ -348,61 +368,90 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
             </Select>
           </div>
 
-          <div className="flex flex-col items-center">
-            {isLoadingAvailability ? (
-              <div className="flex items-center justify-center h-[300px]">
-                <p className="text-sm text-gray-500">Loading available dates...</p>
-              </div>
-            ) : (
-              <Calendar 
-                mode="single" 
-                selected={date} 
-                onSelect={setDate}
-                disabled={(date) => {
-                  // Disable past dates
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  if (date < today) {
-                    return true;
-                  }
-                  
-                  // If no barber selected, don't disable future dates
-                  if (!selectedBarber) {
-                    return false;
-                  }
-                  
-                  // Disable dates not in availableDates array
-                  const dateStr = date.toISOString().split('T')[0];
-                  return !availableDates.some(availableDate => {
-                    const availableDateStr = availableDate.toISOString().split('T')[0];
-                    return availableDateStr === dateStr;
-                  });
-                }}
-              />
-            )}
+          {/* Calendar */}
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              Select Date
+            </label>
+            <div className="flex flex-col items-center p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+              {isLoadingAvailability ? (
+                <div className="flex items-center justify-center h-[300px]">
+                  <div className="text-center">
+                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p className="text-sm text-slate-600 font-medium">Loading available dates...</p>
+                  </div>
+                </div>
+              ) : (
+                <Calendar 
+                  mode="single" 
+                  selected={date} 
+                  onSelect={setDate}
+                  className="rounded-xl"
+                  disabled={(date) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (date < today) {
+                      return true;
+                    }
+                    
+                    if (!selectedBarber) {
+                      return false;
+                    }
+                    
+                    const dateStr = date.toISOString().split('T')[0];
+                    return !availableDates.some(availableDate => {
+                      const availableDateStr = availableDate.toISOString().split('T')[0];
+                      return availableDateStr === dateStr;
+                    });
+                  }}
+                />
+              )}
+            </div>
           </div>
 
+          {/* Time Slots */}
           {date && selectedBarber && (
-            <div className="grid grid-cols-4 gap-2">
-              {TIME_SLOTS.map((time) => (
-                <Button
-                  key={time}
-                  variant={selectedTime === time ? "default" : "outline"}
-                  onClick={() => setSelectedTime(time)}
-                >
-                  {time}
-                </Button>
-              ))}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                Select Time
+              </label>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {TIME_SLOTS.map((time) => (
+                  <button
+                    key={time}
+                    onClick={() => setSelectedTime(time)}
+                    className={`px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+                      selectedTime === time
+                        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                        : "bg-white border border-slate-200 text-slate-700 hover:border-blue-200 hover:bg-blue-50"
+                    }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          <Button
+          {/* Submit Button */}
+          <button
             disabled={!selectedTime || !customerName || isSubmitting}
-            className="w-full mt-4"
+            className={`w-full py-4 rounded-xl font-extrabold text-lg transition-all ${
+              !selectedTime || !customerName || isSubmitting
+                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-600/20 active:scale-95"
+            }`}
             onClick={handleBookingSubmit}
           >
-            {isSubmitting ? "A enviar..." : "Confirmar"}
-          </Button>
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                Processing...
+              </span>
+            ) : (
+              "Confirm Booking"
+            )}
+          </button>
         </div>
       </DrawerContent>
     </Drawer>
