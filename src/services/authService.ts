@@ -164,6 +164,31 @@ class AuthService {
   }
 
   /**
+   * Sign in with Google OAuth
+   * @returns Error if sign in fails
+   */
+  async signInWithGoogle(): Promise<{ error: Error | null }> {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        return { error };
+      }
+
+      return { error: null };
+    } catch (err) {
+      return {
+        error: err instanceof Error ? err : new Error("Unknown error"),
+      };
+    }
+  }
+
+  /**
    * Get current user
    * @returns User object or null
    */

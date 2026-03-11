@@ -33,4 +33,5 @@ export interface AuthContextType {
   signIn: (data: SignInData) => Promise<{ user: AuthUser | null; error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  signInWithGoogle: () => Promise<{ error: Error | null }>;
 }

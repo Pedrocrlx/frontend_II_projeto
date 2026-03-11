@@ -2,6 +2,59 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Chunk 4] - Authentication & Subscription
+## [0.5.0] - 11/03/26 ✅
+### Added
+- **Supabase Auth Integration**
+  - Sign up page (`/auth/signup`) with name, email, password confirmation, and terms acceptance
+  - Login page (`/auth/login`) with email/password and forgot password link
+  - Forgot password page (`/auth/forgot-password`) with email input and success confirmation
+  - Email verification page (`/auth/verify-email`) with redirect instructions
+  - Toast notifications for all auth feedback (Sonner)
+
+- **Route Protection Middleware** (`src/middleware.ts`)
+  - Server-side protection using `@supabase/ssr` for cookie-based sessions
+  - Unauthenticated users redirected to `/auth/login` with `?redirectTo` param
+  - Authenticated users redirected away from auth pages to `/dashboard`
+  - Covers `/dashboard/*` and `/onboarding/*` routes
+
+- **Auth Infrastructure**
+  - `src/lib/supabase.ts` - Supabase client initialization with env validation
+  - `src/lib/stripe.ts` - Stripe client initialized (implementation deferred)
+  - `src/contexts/AuthContext.tsx` - Global auth state with `useAuth()` hook
+  - `src/services/authService.ts` - Service pattern: signUp, signIn, signOut, resetPassword, updatePassword, getSession, getCurrentUser
+  - `src/services/userService.ts` - Service pattern: createUser, getUserBySupabaseId, getUserByEmail, updateUserEmail, deleteUser
+  - `src/hooks/useProtectedRoute.ts` - `useProtectedRoute()` and `usePublicRoute()` hooks
+  - `src/types/auth.ts` - TypeScript interfaces: AuthUser, SignUpData, SignInData, AuthContextType
+
+- **Database Updates**
+  - `User` model with `supabaseId` link to Supabase Auth
+  - `Subscription` model with full Stripe fields (plan, status, trial, billing periods)
+  - `BarberShop` updated with `userId` foreign key (owner association)
+  - Migration `20260305210942_add_auth_models` applied
+
+- **Dashboard Placeholder** (`/dashboard`)
+  - Auth-protected page with user greeting
+  - Sections for Barbers, Services, Bookings, Settings, Billing (all marked Coming Soon)
+  - Sign out button connected to `authService`
+
+- **Prisma Seed Updates**
+  - `prisma/seed.ts` updated: creates User → BarberShop (PedroBarberShop) → 2 Barbers (Patrick, Zé) → 3 Services (Corte, Barba, Corte + Barba)
+  - `prisma/seed-user.ts` added: creates test user in both Supabase Auth and Prisma DB
+
+- **Prisma 5 Maintained**
+  - Upgraded to Prisma 7 and rolled back due to breaking changes in env loading
+  - Prisma 5.10.2 retained as stable baseline
+  - `@supabase/ssr` used for server-side session management in middleware
+
+### Notes
+- Stripe integration installed but deferred (no checkout/webhook yet - Chunk 5 prerequisite)
+- Auth system fully functional: signup → email verification → login → dashboard redirect
+- Middleware uses Supabase SSR for secure server-side session validation
+- Service pattern enforced throughout (no direct Supabase calls in components)
+
+---
+
 ## [Chunk 3] - Landing Page & Marketing
 ## [0.4.0] - 05/03/26 ✅
 ### Added
