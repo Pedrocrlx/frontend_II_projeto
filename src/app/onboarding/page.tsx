@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { onboardingService } from "@/services/onboardingService";
+import { onboardingService, sanitizePhone } from "@/services/onboardingService";
 import type { OnboardingServiceItem } from "@/services/onboardingService";
 import { toast } from "sonner";
 import GridIcon from "@/components/landing/GridIcon";
@@ -69,6 +69,11 @@ export default function OnboardingPage() {
   const [shopAddress, setShopAddress] = useState("");
   const [shopPhone, setShopPhone] = useState("");
 
+  // Slug availability
+  type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
+  const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
+  const slugDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Step 2 — Barbers
   const [barbers, setBarbers] = useState<Barber[]>([
     { id: "1", name: "", specialty: "", phone: "", instagram: "" },
@@ -93,6 +98,31 @@ export default function OnboardingPage() {
       );
     }
   }, [shopName, currentStep]);
+
+  // Real-time slug availability check (debounced 500ms)
+  useEffect(() => {
+    if (slugDebounceRef.current) clearTimeout(slugDebounceRef.current);
+
+    if (!shopSlug || shopSlug.length < 3) {
+      setSlugStatus("idle");
+      return;
+    }
+
+    if (!/^[a-z0-9-]+$/.test(shopSlug)) {
+      setSlugStatus("invalid");
+      return;
+    }
+
+    setSlugStatus("checking");
+    slugDebounceRef.current = setTimeout(async () => {
+      const { available } = await onboardingService.checkSlug(shopSlug);
+      setSlugStatus(available ? "available" : "taken");
+    }, 500);
+
+    return () => {
+      if (slugDebounceRef.current) clearTimeout(slugDebounceRef.current);
+    };
+  }, [shopSlug]);
 
   // Auth guard
   useEffect(() => {
@@ -132,7 +162,7 @@ export default function OnboardingPage() {
         name: shopName,
         slug: shopSlug,
         description: shopAbout || undefined,
-        phone: shopPhone || undefined,
+        phone: shopPhone ? sanitizePhone(shopPhone) : undefined,
         address: shopAddress || undefined,
       },
       barbers: barbers
@@ -140,7 +170,7 @@ export default function OnboardingPage() {
         .map((b) => ({
           name: b.name.trim(),
           specialty: b.specialty?.trim() || undefined,
-          phone: b.phone.trim(),
+          phone: sanitizePhone(b.phone),
           instagram: b.instagram?.trim() || undefined,
         })),
       services: services
@@ -164,7 +194,10 @@ export default function OnboardingPage() {
   };
 
   // --- Validation ---
-  const isStep1Valid = shopName.trim().length >= 3 && shopSlug.trim().length >= 3;
+  const isStep1Valid =
+    shopName.trim().length >= 3 &&
+    shopSlug.trim().length >= 3 &&
+    slugStatus === "available";
   const isStep2Valid = barbers.some((b) => b.name.trim().length > 0 && b.phone.trim().length > 0);
   const isStep3Valid = services.some((s) => s.name.trim().length > 0 && s.price.trim().length > 0);
 
@@ -278,14 +311,47 @@ export default function OnboardingPage() {
                   </div>
                   <div>
                     <label htmlFor="shopSlug" className={labelClass}>Booking URL *</label>
-                    <div className="flex rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 focus-within:ring-2 focus-within:ring-blue-600/50 focus-within:border-blue-600 transition-all bg-white dark:bg-slate-800">
+                    <div className={`flex rounded-xl overflow-hidden border transition-all bg-white dark:bg-slate-800 focus-within:ring-2 ${
+                      slugStatus === "available"
+                        ? "border-emerald-500 focus-within:ring-emerald-500/30"
+                        : slugStatus === "taken" || slugStatus === "invalid"
+                        ? "border-red-400 focus-within:ring-red-400/30"
+                        : "border-slate-200 dark:border-slate-700 focus-within:ring-blue-600/50 focus-within:border-blue-600"
+                    }`}>
                       <span className="px-4 py-3 bg-slate-50 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 text-sm border-r border-slate-200 dark:border-slate-700 flex items-center select-none whitespace-nowrap">
                         grid.com/
                       </span>
                       <input id="shopSlug" type="text" placeholder="classic-cuts" value={shopSlug}
                         onChange={(e) => setShopSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
                         className="w-full px-4 py-3 focus:outline-none bg-transparent text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500" />
+                      <span className="px-3 flex items-center shrink-0">
+                        {slugStatus === "checking" && (
+                          <svg className="w-4 h-4 animate-spin text-slate-400" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                          </svg>
+                        )}
+                        {slugStatus === "available" && (
+                          <svg className="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                        {(slugStatus === "taken" || slugStatus === "invalid") && (
+                          <svg className="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        )}
+                      </span>
                     </div>
+                    {slugStatus === "taken" && (
+                      <p className="mt-1.5 text-xs text-red-500 font-medium">This URL is already taken.</p>
+                    )}
+                    {slugStatus === "invalid" && (
+                      <p className="mt-1.5 text-xs text-red-500 font-medium">Only lowercase letters, numbers, and hyphens allowed.</p>
+                    )}
+                    {slugStatus === "available" && (
+                      <p className="mt-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">Available!</p>
+                    )}
                   </div>
                 </div>
 
@@ -315,9 +381,18 @@ export default function OnboardingPage() {
           {/* STEP 2 — TEAM */}
           {currentStep === 2 && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <h2 className="text-3xl font-extrabold text-slate-900 dark:text-slate-50 mb-2">Add your Team</h2>
+              <div className="flex items-start justify-between mb-2">
+                <h2 className="text-3xl font-extrabold text-slate-900 dark:text-slate-50">Add your Team</h2>
+                <span className={`text-sm font-bold px-3 py-1 rounded-full mt-1 ${
+                  barbers.length >= 10
+                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                    : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                }`}>
+                  {barbers.length}/10
+                </span>
+              </div>
               <p className="text-slate-500 dark:text-slate-400 mb-8">
-                Who is working at {shopName || "your shop"}? Up to 10 barbers.
+                Who is working at {shopName || "your shop"}?{barbers.length >= 10 ? " Maximum reached." : " Up to 10 barbers."}
               </p>
 
               <div className="space-y-6">
@@ -361,12 +436,16 @@ export default function OnboardingPage() {
                   </div>
                 ))}
 
-                {barbers.length < 10 && (
+                {barbers.length < 10 ? (
                   <button onClick={addBarber}
                     className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 py-2 px-1 transition-colors">
                     <PlusIcon className="w-4 h-4" />
                     Add another barber
                   </button>
+                ) : (
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400 py-2 px-1">
+                    Maximum of 10 barbers reached.
+                  </p>
                 )}
               </div>
             </div>
@@ -375,8 +454,17 @@ export default function OnboardingPage() {
           {/* STEP 3 — SERVICES */}
           {currentStep === 3 && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <h2 className="text-3xl font-extrabold text-slate-900 dark:text-slate-50 mb-2">Add your Services</h2>
-              <p className="text-slate-500 dark:text-slate-400 mb-8">What do you offer? Up to 20 services.</p>
+              <div className="flex items-start justify-between mb-2">
+                <h2 className="text-3xl font-extrabold text-slate-900 dark:text-slate-50">Add your Services</h2>
+                <span className={`text-sm font-bold px-3 py-1 rounded-full mt-1 ${
+                  services.length >= 20
+                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                    : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                }`}>
+                  {services.length}/20
+                </span>
+              </div>
+              <p className="text-slate-500 dark:text-slate-400 mb-8">What do you offer?{services.length >= 20 ? " Maximum reached." : " Up to 20 services."}</p>
 
               <div className="space-y-4">
                 <div className="hidden sm:flex gap-3 px-1">
@@ -428,12 +516,16 @@ export default function OnboardingPage() {
                   </div>
                 ))}
 
-                {services.length < 20 && (
+                {services.length < 20 ? (
                   <button onClick={addService}
                     className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 py-2 px-1 transition-colors">
                     <PlusIcon className="w-4 h-4" />
                     Add another service
                   </button>
+                ) : (
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400 py-2 px-1">
+                    Maximum of 20 services reached.
+                  </p>
                 )}
               </div>
             </div>

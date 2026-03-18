@@ -181,25 +181,37 @@ Grid is a multi-tenant SaaS platform that enables barbershops to create professi
 ### **Chunk 5: Onboarding Wizard** (COMPLETED ✅)
 * **Multi-Step Form** (`/onboarding`)
   * Step 1: Create BarberShop (name, slug, description, phone, address)
-    * Real-time slug validation (uniqueness check)
-    * Slug auto-generation from name (accent removal)
-    * Reserved slug prevention
+    * Real-time slug validation with debounce 500ms (uniqueness check via `GET /api/onboarding/check-slug`)
+    * Visual feedback on slug field: spinner (checking), green check (available), red X (taken/invalid)
+    * Slug auto-generation from name (accent removal via NFD normalization)
+    * Reserved slug prevention (client + API)
+    * "Continue" blocked until slug is confirmed available
+    * Phone sanitized before POST (strips spaces, symbols — preserves `+` prefix)
   * Step 2: Add Barbers (1-10 required)
     * Name, specialty, phone (required), instagram (optional), photo upload UI
     * Minimum 1 barber validation
+    * Live counter badge `X/10`, turns amber at limit
+    * "Add another barber" replaced by warning message at limit
+    * Phone sanitized before POST (`sanitizePhone` from `onboardingService`)
   * Step 3: Add Services (1-20 required)
     * Name, price, duration
     * Minimum 1 service validation
+    * Live counter badge `X/20`, turns amber at limit
+    * "Add another service" replaced by warning message at limit
   * Step 4: Preview & Launch
-    * Review summary
+    * Review summary (shop name, URL, team size, services count)
     * Confirm and activate (calls `POST /api/onboarding/complete`)
 * **State Management**
   * Local `useState` for wizard state (no Redux/Context needed)
   * Form validation at each step
   * Progress indicator with stepper
 * **API Endpoints**
-  * `GET /api/onboarding/check-slug` - Slug availability
+  * `GET /api/onboarding/check-slug` - Slug availability (reserved list + DB uniqueness)
   * `POST /api/onboarding/complete` - Atomic creation (transaction), JWT auth via Bearer token
+* **Service Layer**
+  * `onboardingService.complete()` - attaches Supabase JWT, calls API
+  * `onboardingService.checkSlug()` - slug availability check
+  * `sanitizePhone()` - exported utility, strips non-digits, preserves `+` prefix
 * **Schema Updates**
   * `BarberShop`: added `phone`, `address` fields
   * `Barber`: added `phone` (required during onboarding), `instagram` (optional) fields

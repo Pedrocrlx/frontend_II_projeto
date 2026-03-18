@@ -2,8 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Chunk 4] - Authentication & Subscription (Ongoing)
-## [0.5.1] - 16/03/26 🔄
+## [Chunk 5] - Onboarding Wizard
+## [0.6.1] - 18/03/26 ✅
+### Added
+- **Phone Sanitization Utility** (`src/services/onboardingService.ts`)
+  - Exported `sanitizePhone()` function: strips spaces, hyphens, parentheses, and other non-digit characters
+  - Preserves `+` country prefix when present (e.g. `"+351 912 345 678"` → `"+351912345678"`)
+  - Applied to barber phones and shop phone before `POST /api/onboarding/complete`
+
+- **Slug Real-Time Availability Check** (`src/app/onboarding/page.tsx`)
+  - Debounced 500ms call to `onboardingService.checkSlug()` on every slug change
+  - Status states: `idle | checking | available | taken | invalid`
+  - Visual feedback on slug input field: spinner (checking), green check + border (available), red X + border (taken/invalid)
+  - Inline message below field: "Available!", "This URL is already taken.", "Only lowercase letters, numbers, and hyphens allowed."
+  - "Continue" button blocked until `slugStatus === "available"`
+
+- **Limit Counters & Warnings** (`src/app/onboarding/page.tsx`)
+  - Step 2 (Barbers): live badge `X/10` in header, turns amber at limit; subtitle updates to "Maximum reached."
+  - Step 3 (Services): live badge `X/20` in header, turns amber at limit; subtitle updates to "Maximum reached."
+  - "Add another barber/service" button replaced by amber warning message when limit is reached
+
+## [0.6.0] - 17/03/26 ✅
+### Added
+- **Onboarding Wizard** (`/onboarding`)
+  - 4-step multi-step form with animated stepper progress indicator
+  - Step 1 — Shop: name, slug (auto-generated from name with accent removal), description, phone, address; reserved slug prevention
+  - Step 2 — Team: up to 10 barbers with name, specialty, phone (required), instagram (optional), photo upload UI
+  - Step 3 — Services: up to 20 services with name, price, duration selector (15min–2h)
+  - Step 4 — Launch: review summary (shop name, URL, team size, service count) + launch button
+  - Per-step validation gates (Continue disabled until step is valid)
+  - Auth guard: redirects unauthenticated users to `/auth/login`
+  - Toast feedback on success and error
+
+- **API Endpoints**
+  - `GET /api/onboarding/check-slug` — validates slug format, reserved list, and DB uniqueness
+  - `POST /api/onboarding/complete` — atomic Prisma transaction (BarberShop + Barbers + Services); JWT auth via Bearer token; auto-creates User record on first login
+
+- **Service Layer** (`src/services/onboardingService.ts`)
+  - `OnboardingServiceClient.complete()` — attaches Supabase session JWT, posts payload
+  - `OnboardingServiceClient.checkSlug()` — slug availability check
+
+- **Schema Updates**
+  - `BarberShop`: added `phone`, `address` fields
+  - `Barber`: added `phone` (required), `instagram` (optional) fields
+  - Migration: `20260317214640_add_contact_social_fields`
+  
 ### Added
 - **Dark Theme Implementation** 
   - Installed `next-themes@0.46` for theme management

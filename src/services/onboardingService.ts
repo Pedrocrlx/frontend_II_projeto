@@ -1,6 +1,19 @@
 import api from "./api";
 import { supabase } from "@/lib/supabase";
 
+/**
+ * Strips all non-digit characters except the leading '+' from a phone string.
+ * Preserves the country dial code prefix if already present (e.g. "+351912345678").
+ * Examples: "+351 912 345 678" → "+351912345678", "912 345-678" → "912345678"
+ */
+export function sanitizePhone(phone: string): string {
+  const trimmed = phone.trim();
+  if (trimmed.startsWith("+")) {
+    return "+" + trimmed.slice(1).replace(/\D/g, "");
+  }
+  return trimmed.replace(/\D/g, "");
+}
+
 export interface OnboardingBarber {
   name: string;
   specialty?: string;
