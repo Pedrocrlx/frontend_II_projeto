@@ -5,23 +5,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, type ReactElement } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
+import GridIcon from "@/components/landing/GridIcon";
 type ComingSoonCard = {
   title: string;
   description: string;
   icon: "blue" | "green" | "purple" | "orange" | "indigo" | "pink";
 };
-
-function GridIcon({ className }: { className?: string }) {
-  return (
-    <div className={`grid grid-cols-2 gap-0.5 ${className ?? ""}`.trim()} aria-hidden="true">
-      <div className="bg-slate-200 rounded-sm" />
-      <div className="bg-slate-200 rounded-sm" />
-      <div className="bg-blue-600 rounded-sm" />
-      <div className="bg-slate-200 rounded-sm" />
-    </div>
-  );
-}
 
 function FeatureIcon({ variant }: { variant: ComingSoonCard["icon"] }) {
   const styles: Record<typeof variant, string> = {
@@ -113,7 +102,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="text-center">
-          <GridIcon className="w-10 h-10 mx-auto mb-6" />
+          <GridIcon />
           <p className="text-sm font-bold text-slate-900 tracking-widest uppercase">Loading dashboard</p>
           <p className="mt-2 text-sm text-slate-500">Preparing your workspace…</p>
         </div>
@@ -140,7 +129,7 @@ export default function DashboardPage() {
               href="/"
               className="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 rounded-md"
             >
-              <GridIcon className="w-6 h-6" />
+              <GridIcon />
               <span className="text-xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">Grid</span>
             </Link>
 

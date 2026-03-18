@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export function Hero() {
   return (
     <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-white dark:bg-slate-950">
@@ -15,10 +17,10 @@ export function Hero() {
             professional booking page in minutes and stop the scheduling chaos.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="w-full sm:w-auto px-8 py-4 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl font-bold text-lg hover:bg-slate-800 dark:hover:bg-slate-200 transition-all shadow-xl shadow-slate-900/10 dark:shadow-slate-100/10">
+            <Link href="/auth/signup" className="cursor-pointer w-full sm:w-auto px-8 py-4 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl font-bold text-lg hover:bg-slate-800 dark:hover:bg-slate-200 transition-all shadow-xl shadow-slate-900/10 dark:shadow-slate-100/10">
               Start 14-Day Free Trial
-            </button>
-            <button className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+            </Link>
+            <button className="cursor-pointer w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
               View Demo Shop
             </button>
           </div>
@@ -59,10 +61,10 @@ export function Hero() {
                   <div className="h-10 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 flex items-center px-4 justify-between">
                     <span className="text-xs font-semibold text-slate-900 dark:text-slate-50">10:00 — 10:30</span>
                     <span className="text-[10px] bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded font-bold">
-                      AVAIL
+                      AVAILABLE
                     </span>
                   </div>
-                  <div className="h-10 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center px-4 justify-between text-white shadow-lg shadow-blue-500/20">
+                  <div className="h-10 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center gap-3 px-4 justify-between text-white shadow-lg shadow-blue-500/20">
                     <span className="text-xs font-bold italic">
                       10:30 — 11:00
                     </span>
@@ -73,7 +75,7 @@ export function Hero() {
                   <div className="h-10 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 flex items-center px-4 justify-between">
                     <span className="text-xs font-semibold text-slate-900 dark:text-slate-50">11:00 — 11:30</span>
                     <span className="text-[10px] bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded font-bold">
-                      AVAIL
+                      AVAILABLE
                     </span>
                   </div>
                 </div>

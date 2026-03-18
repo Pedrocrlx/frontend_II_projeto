@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import GridIcon from "./GridIcon";
 
 export function Footer() {
   return (
@@ -9,12 +10,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-12 mb-16">
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-6">
-              <div className="grid grid-cols-2 gap-0.5 w-6 h-6">
-                <div className="bg-slate-200 dark:bg-white rounded-sm"></div>
-                <div className="bg-slate-200 dark:bg-white rounded-sm"></div>
-                <div className="highlight-square rounded-sm"></div>
-                <div className="bg-slate-200 dark:bg-white rounded-sm"></div>
-              </div>
+              <GridIcon/>
               <span className="text-xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">
                 Grid
               </span>
@@ -102,7 +98,7 @@ export function Footer() {
         </div>
         <div className="border-t border-slate-100 dark:border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-400 dark:text-slate-500 text-xs">
-            © {new Date().getFullYear()} Grid SaaS. Built for the modern barber.
+            © {new Date().getFullYear()} Grid. Built for the modern barber.
           </p>
           <div className="flex gap-6">
             <Link href="#" className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">

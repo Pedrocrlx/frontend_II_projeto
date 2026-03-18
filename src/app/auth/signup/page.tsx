@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import GridIcon from "@/components/landing/GridIcon";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -105,12 +106,7 @@ export default function SignUpPage() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
-              <div className="grid grid-cols-2 gap-0.5 w-6 h-6">
-                <div className="bg-slate-200 dark:bg-slate-700 rounded-sm"></div>
-                <div className="bg-slate-200 dark:bg-slate-700 rounded-sm"></div>
-                <div className="bg-blue-600 rounded-sm"></div>
-                <div className="bg-slate-200 dark:bg-slate-700 rounded-sm"></div>
-              </div>
+              <GridIcon />
               <span className="text-xl font-extrabold text-slate-900 dark:text-slate-50">Grid</span>
             </div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-2">
@@ -135,9 +131,8 @@ export default function SignUpPage() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="João Silva"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${
-                  errors.name ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${errors.name ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
+                  }`}
               />
               {errors.name && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.name}</p>
@@ -156,9 +151,8 @@ export default function SignUpPage() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="joao@example.com"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${
-                  errors.email ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${errors.email ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
+                  }`}
               />
               {errors.email && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.email}</p>
@@ -177,9 +171,8 @@ export default function SignUpPage() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${
-                  errors.password ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${errors.password ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
+                  }`}
               />
               {errors.password && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.password}</p>
@@ -198,9 +191,8 @@ export default function SignUpPage() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${
-                  errors.confirmPassword ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${errors.confirmPassword ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
+                  }`}
               />
               {errors.confirmPassword && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.confirmPassword}</p>
