@@ -3,14 +3,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ["/dashboard", "/onboarding"];
+const PROTECTED_ROUTES = ["/dashboard/*", "/onboarding",];
 
 // Routes that should redirect authenticated users to dashboard
 const AUTH_ROUTES = [
   "/auth/login",
   "/auth/signup",
   "/auth/forgot-password",
-  // NOTE: /auth/callback is intentionally excluded - it must run freely for OAuth PKCE flow
 ];
 
 export async function proxy(request: NextRequest) {
