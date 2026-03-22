@@ -10,6 +10,7 @@ const AUTH_ROUTES = [
   "/auth/login",
   "/auth/signup",
   "/auth/forgot-password",
+  "/onboarding",
 ];
 
 export async function proxy(request: NextRequest) {

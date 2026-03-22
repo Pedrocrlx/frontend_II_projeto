@@ -125,16 +125,16 @@ export default function DashboardPage() {
       </nav>
 
       {/* Main Content */}
-      <main className="relative z-10 pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="relative z-10 pt-28 pb-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-12">
+        <div className="mb-12 sm:mb-16 text-center lg:text-left">
           <p className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mb-3">Workspace</p>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight mb-4">Dashboard</h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl">Manage your barbershop, team, and bookings from one centralized workspace.</p>
         </div>
 
         {/* Cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid sm:grid-cols-2 text-center lg:grid-cols-3 gap-6 lg:gap-8">
           {dashboardCards.map((card) => (
             <DashboardCard
               key={card.title}
@@ -145,17 +145,6 @@ export default function DashboardPage() {
               isComingSoon={card.isComingSoon}
             />
           ))}
-        </div>
-
-        {/* Back to Home */}
-        <div className="mt-10 text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 rounded-md"
-          >
-            <span aria-hidden="true" className="mr-2">←</span>
-            Back to Home
-          </Link>
         </div>
       </main>
     </div>

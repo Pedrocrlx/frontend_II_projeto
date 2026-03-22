@@ -95,7 +95,6 @@ export function DashboardManagementLayout({
           <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight mb-4">{title}</h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl">{subtitle}</p>
         </div>
-
         {children}
       </main>
     </div>

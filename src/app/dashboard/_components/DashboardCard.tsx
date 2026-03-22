@@ -11,7 +11,7 @@ interface FeatureIconProps {
 
 function FeatureIcon({ variant }: FeatureIconProps) {
   const styles: Record<IconVariant, string> = {
-    blue: "text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/30",
+    blue: "text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/30 sm:just",
     green: "text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/30",
     purple: "text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-900 bg-purple-50 dark:bg-purple-950/30",
     orange: "text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900 bg-orange-50 dark:bg-orange-950/30",
@@ -93,13 +93,8 @@ export function DashboardCard({
 }: DashboardCardProps) {
   const CardContent = (
     <div className="group relative rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 hover:border-blue-200 dark:hover:border-blue-900 hover:shadow-2xl hover:shadow-blue-500/5 dark:hover:shadow-blue-500/10 transition-shadow h-full">
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-center justify-center mb-6">
         <FeatureIcon variant={icon} />
-        {isComingSoon && (
-          <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ring-1 ring-inset ring-slate-200 dark:ring-slate-700">
-            Soon
-          </span>
-        )}
       </div>
 
       <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50 mb-2">{title}</h2>

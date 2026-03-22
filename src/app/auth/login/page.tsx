@@ -85,7 +85,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 dark:from-slate-900 to-slate-100 dark:to-slate-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 dark:from-slate-900 to-slate-100 dark:to-slate-950 flex items-center justify-center px-0 pt-5 lg:pt-0 lg:px-10">
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg dark:shadow-xl dark:shadow-black/20 p-8">
           {/* Header */}
@@ -199,13 +199,13 @@ export default function LoginPage() {
               Create One
             </Link>
           </p>
-        </div>
 
-        {/* Back to home */}
-        <div className="text-center mt-4">
-          <Link href="/" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 text-sm font-medium">
-            ← Back to Home
-          </Link>
+          {/* Back to home */}
+          <div className="text-center mt-4">
+            <Link href="/" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 text-sm font-medium">
+              ← Back to Home
+            </Link>
+          </div>
         </div>
       </div>
     </div>

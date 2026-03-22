@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { onboardingService, sanitizePhone } from "@/services/onboardingService";
-import type { OnboardingServiceItem } from "@/services/onboardingService";
 import { toast } from "sonner";
 import GridIcon from "@/components/landing/GridIcon";
 
