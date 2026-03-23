@@ -1,65 +1,90 @@
-# Gemini Project Overview: Grid
-
-This document provides a comprehensive overview of the Grid project, a multi-tenant SaaS platform for barbershops. It is intended to be used as a context for an AI assistant to understand the project and provide assistance.
+# GEMINI.md - Project Context & Instructions
 
 ## Project Overview
+**Grid** is a multi-tenant SaaS platform for barbershops. It allows shop owners to create professional booking websites with organized scheduling, international phone validation, and automated appointment management.
 
-Grid is a multi-tenant SaaS platform designed for barbershops, enabling them to create professional booking websites with organized scheduling. The platform brings structure and precision to appointment management, featuring smart calendar organization, international booking support, and a clean booking experience for customers.
+### Read first:
+- **docs/spec.md**
+- **docs/saas-architecture.md**
+- **docs/QUICK_REFERENCE.md**
 
-The application is a Next.js project built with TypeScript, using Prisma as the ORM for a PostgreSQL database. It utilizes Bun as the runtime and package manager. The frontend is built with React and Tailwind CSS, with UI components from Shadcn UI.
+### Behavior:
+- Always read **docs/spec.md** before implementing a feature.
+- If the task is ambiguous, ask 1 clarifying question before coding.
+- Before editing files, briefly summarize the implementation plan.
+- Prefer small, incremental changes over broad refactors.
 
-## Building and Running
+### Do not:
+- Do not modify .env files.
+- Do not touch database migrations unless the task explicitly requires it.
+- Do not change business rules without updating **docs/spec.md.**
+- Do not introduce new libraries without justification.
 
-The following commands are used to build, run, and test the project:
+### Validation:
+- Run tests after meaningful changes.
+- Update or add tests for critical flows.
+- Ensure TypeScript types are strict and explicit.
 
--   **Install Dependencies:** `bun install`
--   **Run Development Server:** `bun run dev`
--   **Run Production Build:** `bun run build`
--   **Start Production Server:** `bun run start`
--   **Run Tests:** `bun test`
--   **Lint Code:** `bun run lint`
+### Rules:
+- **Use bun as package manager and runtime**
+- **Follow the /AGENTS.md**
+- **Use Axios, never bare fetch**
+- **Write tests for critical changes**
+- **Before implementing a big feature, present a short plan**
 
-## Development Conventions
+### Core Tech Stack
+- **Framework:** Next.js 14+ (App Router)
+- **Runtime:** Bun
+- **Language:** TypeScript (Strict)
+- **Database:** PostgreSQL + Prisma ORM
+- **Authentication:** Supabase Auth
+- **Payments:** Stripe (Checkout + Webhooks)
+- **Styling:** Tailwind CSS + Shadcn UI
+- **Testing:** Jest + React Testing Library
 
-The project follows a set of coding guidelines to ensure consistency and maintainability. Key principles include:
+## Architectural Patterns
+- **Multi-tenancy:** Uses slug-based routing (e.g., `/{slug}`) for public shop pages.
+- **Service Pattern:** All API and external communications must be encapsulated in `src/services/`.
+- **Server Actions:** Used for database mutations and complex business logic (e.g., `src/app/_actions/`).
+- **Validation:** Strict international phone validation via `lib/utils/phone-validation.ts`.
+- **Error Handling:** Unified approach using Sonner toasts and structured server responses (HTTP status codes in return objects).
 
--   **KISS (Keep It Simple, Stupid):** Prioritize simple, readable solutions.
--   **Strict Typing:** Use TypeScript effectively and avoid the `any` type.
--   **Service Pattern:** Encapsulate all API communication within the `src/services` directory.
+## Directory Structure
+- `src/app/`: Next.js App Router (Public and Protected routes).
+- `src/app/_actions/`: Server Actions for bookings and availability.
+- `src/components/`: Shared UI components (Radix/Shadcn).
+- `src/services/`: API wrappers and business logic services.
+- `src/lib/`: Library initializations (Prisma, Supabase, Stripe) and utilities.
+- `prisma/`: Database schema, migrations, and seed scripts.
 
-For a complete overview, please refer to the [Coding Guidelines](docs/CODING_GUIDELINE.md).
+## Development Workflow
 
-## Project Structure
+### Building and Running
+- **Install:** `bun install`
+- **Dev Server:** `bun run dev`
+- **Build:** `bun run build`
+- **Lint:** `bun run lint`
 
-The codebase is organized to maintain a clean and scalable architecture:
+### Database Management
+- **Migrate:** `bunx prisma migrate dev`
+- **Seed:** `bunx prisma db seed`
+- **Studio:** `bunx prisma studio`
+- **Generate Client:** `bunx prisma generate`
 
--   `src/app/`: Contains the core application logic, following the Next.js App Router convention.
-    -   `api/`: API route handlers.
-    -   `[slug]/`: Dynamic pages for each tenant (barbershop).
-    -   `_actions/`: Server-side actions for creating and managing bookings.
--   `src/components/`: Shared React components, including UI primitives from Shadcn.
--   `src/services/`: Houses API service modules (e.g., Axios wrappers) for interacting with the backend.
--   `src/lib/`: Utility functions and library initializations (e.g., `prisma.ts`).
--   `prisma/`: Contains the Prisma schema (`schema.prisma`), migrations, and seed scripts.
--   `docs/`: Project documentation, including coding guidelines and specifications.
+### Testing
+- **Run all:** `bun test`
+- **Watch mode:** `bun test:watch`
 
-## Database Schema
+## Coding Standards & Conventions
+- **Language:** All code, comments, and user-facing error messages must be in **English**.
+- **Typing:** Avoid `any`. Use strict TypeScript interfaces/types for all data structures.
+- **Simplicity:** Adhere to the **KISS** (Keep It Simple, Stupid) principle.
+- **Validation:** Always validate user input on both client and server sides.
+- **Consistency:** Use Sonner for all toast notifications. Do not use `alert()` or `console.log` for user feedback.
+- **Atomic Commits:** Follow the project's existing commit style (check `git log` for reference).
 
-The database schema is defined in `prisma/schema.prisma`. It includes the following models:
-
--   `User`: Represents a user of the platform.
--   `Subscription`: Represents a user's subscription plan.
--   `BarberShop`: Represents a barbershop tenant.
--   `Barber`: Represents a barber within a barbershop.
--   `Booking`: Represents a booking for a service.
--   `Service`: Represents a service offered by a barbershop.
-
-## Key Files
-
--   **`README.md`**: The main README file for the project.
--   **`package.json`**: Defines the project's dependencies and scripts.
--   **`next.config.ts`**: The configuration file for Next.js.
--   **`prisma/schema.prisma`**: The database schema.
--   **`src/app/_actions/create-booking.ts`**: The server-side logic for creating a booking.
--   **`src/app/[slug]/page.tsx`**: The main page for a barbershop.
--   **`src/app/[slug]/_components/BookingSheet.tsx`**: The UI component for the booking process.
+## Key Business Rules
+- **Barbers:** Max 10 per shop. Required: Name, Phone.
+- **Services:** Max 20 per shop. Required: Name, Price, Duration.
+- **Slugs:** Unique, 3-50 chars, lowercase alphanumeric + hyphens.
+- **Bookings:** Must be within business hours (09:00 - 19:30).

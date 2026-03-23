@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Chunk 6] - Admin Dashboard (In Progress)
+## [0.7.1] - 23/03/26 ✅
+### Added
+- **Auth Flow Fix — Onboarding Redirect**
+  - `GET /api/user/shop-status` — new endpoint: verifies JWT and checks if user has a `BarberShop` in DB
+  - `userService.getShopStatus()` — service method using Axios + Bearer token
+  - `auth/callback/route.ts` — after OAuth code exchange, queries DB to determine destination: `/onboarding` (no shop) or `/dashboard` (has shop); cookies forwarded correctly to final response
+  - `login/page.tsx` — email/password login now calls `getShopStatus()` before redirecting
+  - `proxy.ts` — removed `/onboarding` from `AUTH_ROUTES`; authenticated users can now access `/onboarding` if they have no shop
+
+- **i18n — Internationalisation System**
+  - Custom lightweight i18n with zero external dependencies
+  - `src/contexts/I18nContext.tsx` — `I18nProvider` + `useI18n()` hook; locale persisted in `localStorage`
+  - `src/components/LanguageSelect.tsx` — reusable `<select>` component
+  - Translation files: `src/lib/i18n/{pt,en,fr,es,de}.ts`
+  - Default language: **Português (PT)**
+  - Supported: Português, English, Français, Español, Deutsch
+  - `LanguageSelect` added to Navbar (`/`) and Dashboard (`/dashboard`) navbars
+  - Covers all UI text: Navbar, Hero, Features, Stats, HowItWorks, Pricing, FinalCTA, Footer, Dashboard cards and loading states
+  - `I18nProvider` added to root layout wrapping all pages
+  - Navbar DOM-manipulation `useEffect`s removed — auth state now handled reactively via `isAuthenticated`
+
 ## [Chunk 5] - Onboarding Wizard
 ## [0.6.1] - 18/03/26 ✅
 ### Added

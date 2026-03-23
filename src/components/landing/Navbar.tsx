@@ -1,51 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelect } from "@/components/LanguageSelect";
 import GridIcon from "./GridIcon";
 import { useAuth } from "@/contexts/AuthContext";
+import { useI18n } from "@/contexts/I18nContext";
 import { useRouter } from "next/navigation";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, signOut } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Login button should not be visible when authenticated also if mobile menu is open, so we can change the login button to dashboard link.
-      const loginButton = document.querySelector('a[href="/auth/login"]');
-      const freeTrialButton = document.querySelector('a[href="/auth/signup"]');
-
-      if (freeTrialButton) {
-        freeTrialButton.className = "hidden";
-      }
-
-      if (loginButton) {
-        loginButton.setAttribute("href", "/dashboard");
-        loginButton.textContent = "Dashboard";
-      }
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (mobileMenuOpen && isAuthenticated) {
-
-      // If mobile menu is open and user is authenticated, need to change the login button to dashboard link.
-      const loginButton = document.querySelector('a[href="/auth/login"]');
-      const freeTrialButton = document.querySelector('a[href="/auth/signup"]');
-
-      if (freeTrialButton) {
-        freeTrialButton.className = "hidden";
-      }
-
-      if (loginButton) {
-        loginButton.setAttribute("href", "/dashboard");
-        loginButton.textContent = "Dashboard";
-      }
-    }
-  }, [mobileMenuOpen, isAuthenticated]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -68,40 +36,43 @@ export function Navbar() {
               href="#features"
               className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              Features
+              {t.nav.features}
             </Link>
             <Link
               href="#how-it-works"
               className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              How it Works
+              {t.nav.howItWorks}
             </Link>
             <Link
               href="#pricing"
               className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              Pricing
+              {t.nav.pricing}
             </Link>
+            <LanguageSelect />
             <ThemeToggle />
             <Link
               href="/auth/login"
               className="text-sm font-bold text-slate-900 dark:text-slate-50 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
             >
-              Login
+              {isAuthenticated ? t.nav.dashboard : t.nav.login}
             </Link>
-            <Link
-              href="/auth/signup" id="freeTrialButton"
-              className="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 px-5 py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all transform active:scale-95"
-            >
-              Start Free Trial
-            </Link>
+            {!isAuthenticated && (
+              <Link
+                href="/auth/signup"
+                className="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 px-5 py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all transform active:scale-95"
+              >
+                {t.nav.startFreeTrial}
+              </Link>
+            )}
             {isAuthenticated && (
               <Link
                 href="#"
                 onClick={handleSignOut}
                 className="w-full sm:w-auto block px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 cursor-pointer dark:hover:bg-blue-500 rounded-lg shadow-lg shadow-blue-500/20 transition-all text-center"
               >
-                Sign out
+                {t.nav.signOut}
               </Link>
             )}
           </div>
@@ -158,28 +129,31 @@ export function Navbar() {
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-all"
           >
-            Features
+            {t.nav.features}
           </Link>
           <Link
             href="#how-it-works"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-all"
           >
-            How it Works
+            {t.nav.howItWorks}
           </Link>
           <Link
             href="#pricing"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-all"
           >
-            Pricing
+            {t.nav.pricing}
           </Link>
+          <div className="py-1">
+            <LanguageSelect />
+          </div>
           <Link
             href="/auth/login"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-4 py-2 text-sm font-bold text-slate-900 dark:text-slate-50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-center"
           >
-            Login
+            {isAuthenticated ? t.nav.dashboard : t.nav.login}
           </Link>
           {!isAuthenticated && (
             <Link
@@ -187,7 +161,7 @@ export function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className="block px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 rounded-lg shadow-lg shadow-blue-500/20 transition-all text-center"
             >
-              Start Free Trial
+              {t.nav.startFreeTrial}
             </Link>
           )}
           {isAuthenticated && (
@@ -196,7 +170,7 @@ export function Navbar() {
               onClick={handleSignOut}
               className="w-full sm:w-auto block px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 rounded-lg shadow-lg shadow-blue-500/20 transition-all text-center"
             >
-              Sign out
+              {t.nav.signOut}
             </Link>
           )}
         </div>

@@ -1,0 +1,109 @@
+import type { Translations } from "./en";
+
+const es: Translations = {
+  nav: {
+    features: "Características",
+    howItWorks: "Cómo funciona",
+    pricing: "Precios",
+    login: "Iniciar sesión",
+    dashboard: "Panel",
+    startFreeTrial: "Prueba gratuita",
+    signOut: "Cerrar sesión",
+  },
+  hero: {
+    badge: "Programación inteligente para barberías",
+    headline: "El horario de tu barbería,",
+    headlineAccent: "Perfectamente organizado",
+    subheadline: "Grid le da a tu barbería una página de reservas profesional con gestión inteligente del calendario, soporte internacional y disponibilidad en tiempo real.",
+    ctaPrimary: "Prueba gratuita",
+    ctaSecondary: "Ver cómo funciona",
+    noCreditCard: "No se requiere tarjeta de crédito",
+    trustedBy: "Con la confianza de más de 500 barberías en todo el mundo",
+  },
+  features: {
+    title: "Todo lo que necesitas para gestionar una barbería moderna",
+    subtitle: "Grid combina programación inteligente, soporte internacional e imagen profesional en una sola plataforma.",
+    items: {
+      calendar: {
+        title: "Calendario Grid inteligente",
+        description: "Programación inteligente que evita las reservas dobles y optimiza el tiempo de tu equipo. Disponibilidad en tiempo real para todos los barberos.",
+      },
+      international: {
+        title: "Listo para el mundo",
+        description: "Soporte para clientes de Portugal, Brasil, Reino Unido, Alemania y Francia con validación y formato de teléfonos locales.",
+      },
+      instant: {
+        title: "Configuración instantánea",
+        description: "Pon tu barbería en línea en minutos. URL personalizada, página de marca y sistema de reservas listo para usar.",
+      },
+    },
+  },
+  stats: {
+    shops: "Barberías activas",
+    bookings: "Reservas gestionadas",
+    countries: "Países soportados",
+    uptime: "Disponibilidad",
+  },
+  howItWorks: {
+    title: "En funcionamiento en minutos",
+    subtitle: "Tres pasos simples para poner tu barbería en línea.",
+    steps: {
+      setup: { title: "Crea tu tienda", description: "Regístrate y configura tu perfil con tu URL única." },
+      configure: { title: "Añade tu equipo", description: "Añade barberos, servicios y precios. Todo en un solo lugar." },
+      launch: { title: "Lanza", description: "Comparte tu enlace de reservas y empieza a aceptar citas al instante." },
+    },
+  },
+  pricing: {
+    title: "Precios simples y transparentes",
+    subtitle: "Empieza gratis durante 14 días. No se requiere tarjeta de crédito.",
+    trial: "14 días de prueba gratuita",
+    monthly: "/ mes",
+    ctaStart: "Prueba gratuita",
+    ctaContact: "Contactar ventas",
+    plans: {
+      basic: { name: "Básico", description: "Perfecto para barberos independientes" },
+      pro: { name: "Pro", description: "Para barberías en crecimiento" },
+      enterprise: { name: "Empresa", description: "Para grandes operaciones" },
+    },
+  },
+  finalCta: {
+    title: "¿Listo para organizar tu barbería?",
+    subtitle: "Únete a cientos de barberías que ya usan Grid.",
+    cta: "Prueba gratuita",
+    noCreditCard: "Sin tarjeta de crédito · Cancela cuando quieras",
+  },
+  footer: {
+    product: "Producto",
+    company: "Empresa",
+    legal: "Legal",
+    links: {
+      features: "Características",
+      pricing: "Precios",
+      about: "Acerca de",
+      blog: "Blog",
+      terms: "Términos de servicio",
+      privacy: "Política de privacidad",
+      contact: "Contacto",
+    },
+    rights: "Todos los derechos reservados.",
+  },
+  dashboard: {
+    workspace: "Espacio de trabajo",
+    title: "Panel",
+    subtitle: "Gestiona tu barbería, equipo y reservas desde un espacio centralizado.",
+    account: "Cuenta",
+    signOut: "Cerrar sesión",
+    loadingTitle: "Cargando panel",
+    loadingSubtitle: "Preparando tu espacio…",
+    cards: {
+      overview: { title: "Resumen", description: "Ve tus estadísticas de reservas y métricas de negocio" },
+      barbers: { title: "Barberos", description: "Gestiona tus barberos y sus perfiles" },
+      services: { title: "Servicios", description: "Gestiona servicios y precios" },
+      bookings: { title: "Reservas", description: "Ve y gestiona las citas de clientes" },
+      settings: { title: "Ajustes", description: "Configura los detalles de tu barbería" },
+      billing: { title: "Facturación", description: "Gestiona tu suscripción y pagos" },
+    },
+  },
+};
+
+export default es;

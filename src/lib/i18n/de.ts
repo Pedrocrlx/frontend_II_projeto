@@ -1,0 +1,109 @@
+import type { Translations } from "./en";
+
+const de: Translations = {
+  nav: {
+    features: "Funktionen",
+    howItWorks: "So funktioniert es",
+    pricing: "Preise",
+    login: "Anmelden",
+    dashboard: "Dashboard",
+    startFreeTrial: "Kostenlos testen",
+    signOut: "Abmelden",
+  },
+  hero: {
+    badge: "Intelligente Terminplanung für Barbershops",
+    headline: "Der Terminplan deines Barbershops,",
+    headlineAccent: "Perfekt organisiert",
+    subheadline: "Grid gibt deinem Barbershop eine professionelle Buchungsseite mit intelligentem Kalender, internationalem Support und Echtzeit-Verfügbarkeit.",
+    ctaPrimary: "Kostenlos testen",
+    ctaSecondary: "So funktioniert es",
+    noCreditCard: "Keine Kreditkarte erforderlich",
+    trustedBy: "Von über 500 Barbershops weltweit vertraut",
+  },
+  features: {
+    title: "Alles, was du für einen modernen Barbershop brauchst",
+    subtitle: "Grid kombiniert intelligente Planung, internationalen Support und professionelles Branding in einer Plattform.",
+    items: {
+      calendar: {
+        title: "Intelligenter Grid-Kalender",
+        description: "Intelligente Planung verhindert Doppelbuchungen und optimiert die Zeit deines Teams. Echtzeit-Verfügbarkeit für alle Barbiere.",
+      },
+      international: {
+        title: "International bereit",
+        description: "Unterstützung für Kunden aus Portugal, Brasilien, Großbritannien, Deutschland und Frankreich mit lokaler Telefonnummernvalidierung.",
+      },
+      instant: {
+        title: "Sofortige Einrichtung",
+        description: "Bringe deinen Barbershop in Minuten online. Benutzerdefinierte URL, Markenseite und Buchungssystem sofort einsatzbereit.",
+      },
+    },
+  },
+  stats: {
+    shops: "Aktive Barbershops",
+    bookings: "Verwaltete Buchungen",
+    countries: "Unterstützte Länder",
+    uptime: "Verfügbarkeit",
+  },
+  howItWorks: {
+    title: "In wenigen Minuten einsatzbereit",
+    subtitle: "Drei einfache Schritte, um deinen Barbershop online zu bringen.",
+    steps: {
+      setup: { title: "Shop erstellen", description: "Registriere dich und richte dein Profil mit deiner einzigartigen URL ein." },
+      configure: { title: "Team hinzufügen", description: "Füge Barbiere, Dienstleistungen und Preise hinzu. Alles an einem Ort." },
+      launch: { title: "Live gehen", description: "Teile deinen Buchungslink und nimm sofort Termine an." },
+    },
+  },
+  pricing: {
+    title: "Einfache, transparente Preise",
+    subtitle: "14 Tage kostenlos starten. Keine Kreditkarte erforderlich.",
+    trial: "14 Tage kostenlose Testversion",
+    monthly: "/ Monat",
+    ctaStart: "Kostenlos testen",
+    ctaContact: "Vertrieb kontaktieren",
+    plans: {
+      basic: { name: "Basic", description: "Perfekt für Solo-Barbiere" },
+      pro: { name: "Pro", description: "Für wachsende Barbershops" },
+      enterprise: { name: "Enterprise", description: "Für große Betriebe" },
+    },
+  },
+  finalCta: {
+    title: "Bereit, deinen Barbershop zu organisieren?",
+    subtitle: "Schließe dich Hunderten von Barbershops an, die Grid bereits nutzen.",
+    cta: "Kostenlos testen",
+    noCreditCard: "Keine Kreditkarte · Jederzeit kündbar",
+  },
+  footer: {
+    product: "Produkt",
+    company: "Unternehmen",
+    legal: "Rechtliches",
+    links: {
+      features: "Funktionen",
+      pricing: "Preise",
+      about: "Über uns",
+      blog: "Blog",
+      terms: "Nutzungsbedingungen",
+      privacy: "Datenschutz",
+      contact: "Kontakt",
+    },
+    rights: "Alle Rechte vorbehalten.",
+  },
+  dashboard: {
+    workspace: "Arbeitsbereich",
+    title: "Dashboard",
+    subtitle: "Verwalte deinen Barbershop, dein Team und Buchungen von einem zentralen Arbeitsbereich.",
+    account: "Konto",
+    signOut: "Abmelden",
+    loadingTitle: "Dashboard wird geladen",
+    loadingSubtitle: "Dein Arbeitsbereich wird vorbereitet…",
+    cards: {
+      overview: { title: "Übersicht", description: "Buchungsstatistiken und Geschäftskennzahlen anzeigen" },
+      barbers: { title: "Barbiere", description: "Barbiere und ihre Profile verwalten" },
+      services: { title: "Dienstleistungen", description: "Dienstleistungen und Preise verwalten" },
+      bookings: { title: "Buchungen", description: "Kundentermine anzeigen und verwalten" },
+      settings: { title: "Einstellungen", description: "Barbershop-Details konfigurieren" },
+      billing: { title: "Abrechnung", description: "Abonnement und Zahlungen verwalten" },
+    },
+  },
+};
+
+export default de;

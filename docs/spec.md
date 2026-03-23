@@ -217,11 +217,20 @@ Grid is a multi-tenant SaaS platform that enables barbershops to create professi
   * `Barber`: added `phone` (required during onboarding), `instagram` (optional) fields
   * Migration: `20260317214640_add_contact_social_fields`
 
-### **Chunk 6: Admin Dashboard** (MANAGEMENT)
-* **Dashboard Layout** (`/dashboard`)
-  * Protected routes (auth + subscription check)
-  * Navigation sidebar
-  * User menu with logout
+### **Chunk 6: Admin Dashboard** (IN PROGRESS 🔄)
+* **Dashboard Layout** (`/dashboard`) ✅
+  * Protected routes (auth + subscription check) ✅
+  * Navigation with user menu and logout ✅
+  * Language selector in navbar ✅
+  * Theme toggle in navbar ✅
+* **i18n — Internationalisation System** ✅
+  * Custom lightweight i18n (no external dependencies)
+  * `I18nContext` + `useI18n()` hook with `localStorage` persistence
+  * `LanguageSelect` component in Navbar (`/`) and Dashboard (`/dashboard`)
+  * Default language: **Portuguese (PT)**
+  * Supported languages: Português, English, Français, Español, Deutsch
+  * Translation files: `src/lib/i18n/{pt,en,fr,es,de}.ts`
+  * Covers: Navbar, Hero, Features, Stats, HowItWorks, Pricing, FinalCTA, Footer, Dashboard
 * **Overview Page**
   * Key metrics (bookings, revenue)
   * Recent bookings list

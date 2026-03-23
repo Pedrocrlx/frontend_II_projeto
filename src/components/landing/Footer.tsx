@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import GridIcon from "./GridIcon";
+import { useI18n } from "@/contexts/I18nContext";
 
 export function Footer() {
+  const { t } = useI18n();
+
   return (
     <footer className="bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 pt-20 pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-12 mb-16">
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-6">
-              <GridIcon/>
-              <span className="text-xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">
-                Grid
-              </span>
+              <GridIcon />
+              <span className="text-xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">Grid</span>
             </div>
             <p className="text-slate-500 dark:text-slate-400 max-w-xs text-sm leading-relaxed italic">
               Your schedule, organized.
@@ -21,84 +22,37 @@ export function Footer() {
           </div>
           <div>
             <h5 className="font-bold text-slate-900 dark:text-slate-50 mb-4 text-sm uppercase tracking-widest">
-              Product
+              {t.footer.product}
             </h5>
             <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-              <li>
-                <Link href="#features" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link href="#pricing" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  Demo Page
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  Security
-                </Link>
-              </li>
+              <li><Link href="#features" className="hover:text-blue-600 dark:hover:text-blue-400">{t.footer.links.features}</Link></li>
+              <li><Link href="#pricing" className="hover:text-blue-600 dark:hover:text-blue-400">{t.footer.links.pricing}</Link></li>
             </ul>
           </div>
           <div>
             <h5 className="font-bold text-slate-900 dark:text-slate-50 mb-4 text-sm uppercase tracking-widest">
-              Company
+              {t.footer.company}
             </h5>
             <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-              <li>
-                <Link href="#" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  Jobs
-                </Link>
-              </li>
+              <li><Link href="#" className="hover:text-blue-600 dark:hover:text-blue-400">{t.footer.links.about}</Link></li>
+              <li><Link href="#" className="hover:text-blue-600 dark:hover:text-blue-400">{t.footer.links.blog}</Link></li>
+              <li><Link href="/contact" className="hover:text-blue-600 dark:hover:text-blue-400">{t.footer.links.contact}</Link></li>
             </ul>
           </div>
           <div>
             <h5 className="font-bold text-slate-900 dark:text-slate-50 mb-4 text-sm uppercase tracking-widest">
-              Legal
+              {t.footer.legal}
             </h5>
             <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-              <li>
-                <Link href="/terms" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  Terms
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  Privacy
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-blue-600 dark:hover:text-blue-400">
-                  Contact
-                </Link>
-              </li>
+              <li><Link href="/terms" className="hover:text-blue-600 dark:hover:text-blue-400">{t.footer.links.terms}</Link></li>
+              <li><Link href="/privacy" className="hover:text-blue-600 dark:hover:text-blue-400">{t.footer.links.privacy}</Link></li>
+              <li><Link href="/contact" className="hover:text-blue-600 dark:hover:text-blue-400">{t.footer.links.contact}</Link></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-slate-100 dark:border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-400 dark:text-slate-500 text-xs">
-            © {new Date().getFullYear()} Grid. Built for the modern barber.
+            © {new Date().getFullYear()} Grid. {t.footer.rights}
           </p>
           <div className="flex gap-6">
             <Link href="#" className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">

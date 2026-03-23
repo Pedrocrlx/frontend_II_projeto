@@ -5,12 +5,11 @@ import type { NextRequest } from "next/server";
 // Routes that require authentication
 const PROTECTED_ROUTES = ["/dashboard/*", "/onboarding",];
 
-// Routes that should redirect authenticated users to dashboard
+// Routes that should redirect authenticated users away (login/signup pages)
 const AUTH_ROUTES = [
   "/auth/login",
   "/auth/signup",
   "/auth/forgot-password",
-  "/onboarding",
 ];
 
 export async function proxy(request: NextRequest) {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { userService } from "@/services/userService";
 import { toast } from "sonner";
 import GridIcon from "@/components/landing/GridIcon";
 
@@ -69,8 +70,9 @@ export default function LoginPage() {
 
     if (user) {
       toast.success("Welcome back!");
-      // Redirect to onboarding if it's the user's first login, otherwise to dashboard
-      router.push("/onboarding");
+      // Check if user already completed onboarding before redirecting
+      const { hasShop } = await userService.getShopStatus();
+      router.push(hasShop ? "/dashboard" : "/onboarding");
     }
   };
 

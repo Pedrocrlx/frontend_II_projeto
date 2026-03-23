@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeProvider";
+import { I18nProvider } from "@/contexts/I18nContext";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body className={`${plusJakartaSans.variable} font-sans antialiased overflow-x-hidden`}>
         <ThemeProvider>
           <AuthProvider>
-            {children}
+            <I18nProvider>
+              {children}
+            </I18nProvider>
           </AuthProvider>
         </ThemeProvider>
         <Toaster richColors />

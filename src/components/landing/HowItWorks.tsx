@@ -1,25 +1,14 @@
 "use client";
 
+import { useI18n } from "@/contexts/I18nContext";
+
 export function HowItWorks() {
+  const { t } = useI18n();
+
   const steps = [
-    {
-      number: "01",
-      title: "Sign Up",
-      description:
-        "Pick the plan that fits. Start with a 14-day free trial, no credit card required.",
-    },
-    {
-      number: "02",
-      title: "Build Your Grid",
-      description:
-        "Add your team and services. Define your working hours and availability logic.",
-    },
-    {
-      number: "03",
-      title: "Accept Bookings",
-      description:
-        "Get your unique URL (grid.app/your-shop). Share it on Instagram and watch the grid fill up.",
-    },
+    { number: "01", key: "setup" as const },
+    { number: "02", key: "configure" as const },
+    { number: "03", key: "launch" as const },
   ];
 
   return (
@@ -29,20 +18,20 @@ export function HowItWorks() {
           Process
         </h2>
         <p className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-slate-50 mb-20">
-          Launch Your Site in 3 Steps
+          {t.howItWorks.title}
         </p>
         <div className="flex flex-col md:flex-row gap-12 relative">
-          {steps.map((step) => (
-            <div key={step.number} className="flex-1 relative">
+          {steps.map(({ number, key }) => (
+            <div key={key} className="flex-1 relative">
               <div className="w-16 h-16 bg-white dark:bg-slate-800 border-4 border-slate-50 dark:border-slate-900 rounded-2xl shadow-xl flex items-center justify-center mx-auto mb-6 relative z-10">
-                <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
-                  {step.number}
-                </span>
+                <span className="text-2xl font-black text-blue-600 dark:text-blue-400">{number}</span>
               </div>
               <h4 className="text-xl font-bold text-slate-900 dark:text-slate-50 mb-2">
-                {step.title}
+                {t.howItWorks.steps[key].title}
               </h4>
-              <p className="text-slate-600 dark:text-slate-400">{step.description}</p>
+              <p className="text-slate-600 dark:text-slate-400">
+                {t.howItWorks.steps[key].description}
+              </p>
             </div>
           ))}
         </div>
