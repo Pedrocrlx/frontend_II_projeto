@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { onboardingService, sanitizePhone } from "@/services/onboardingService";
+import { StorageService } from "@/services/storageService";
 import { toast } from "sonner";
 import GridIcon from "@/components/landing/GridIcon";
 
@@ -63,7 +64,10 @@ export default function OnboardingPage() {
   // Step 1 — Shop
   const [shopName, setShopName] = useState("");
   const [shopSlug, setShopSlug] = useState("");
-  const [shopLogo, setShopLogo] = useState<string | null>(null);
+  const [shopLogo, setShopLogo] = useState<File | null>(null);
+  const [shopLogoPreview, setShopLogoPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [shopAbout, setShopAbout] = useState("");
   const [shopAddress, setShopAddress] = useState("");
   const [shopPhone, setShopPhone] = useState("");
@@ -154,42 +158,77 @@ export default function OnboardingPage() {
   const updateService = (id: string, field: keyof ServiceForm, value: string) =>
     setServices(services.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("Logo size must be less than 2MB");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
+        return;
+      }
+      setShopLogo(file);
+      setShopLogoPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleLaunch = async () => {
     setIsLaunching(true);
-    const { data, error } = await onboardingService.complete({
-      shop: {
-        name: shopName,
-        slug: shopSlug,
-        description: shopAbout || undefined,
-        phone: shopPhone ? sanitizePhone(shopPhone) : undefined,
-        address: shopAddress || undefined,
-      },
-      barbers: barbers
-        .filter((b) => b.name.trim() && b.phone.trim())
-        .map((b) => ({
-          name: b.name.trim(),
-          specialty: b.specialty?.trim() || undefined,
-          phone: sanitizePhone(b.phone),
-          instagram: b.instagram?.trim() || undefined,
+    let uploadedLogoUrl: string | undefined = undefined;
+
+    try {
+      // 1. Upload logo if it exists
+      if (shopLogo) {
+        const toastId = toast.loading("Uploading logo...");
+        try {
+          uploadedLogoUrl = await StorageService.uploadImage(shopLogo, 'shops');
+          toast.success("Logo uploaded!", { id: toastId });
+        } catch (uploadError) {
+          toast.error("Failed to upload logo.", { id: toastId });
+          throw new Error("Logo upload failed");
+        }
+      }
+
+      // 2. Sanitize data
+      const finalBarbers = barbers.map(b => ({
+        ...b,
+        phone: sanitizePhone(b.phone),
+      }));
+
+      // 3. Call the completion service
+      await onboardingService.complete({
+        shop: {
+          name: shopName,
+          slug: shopSlug,
+          description: shopAbout,
+          address: shopAddress,
+          phone: sanitizePhone(shopPhone),
+          logoUrl: uploadedLogoUrl,
+        },
+        barbers: finalBarbers.filter(b => b.name.trim()).map(b => ({
+          name: b.name,
+          specialty: b.specialty,
+          phone: b.phone,
+          instagram: b.instagram
         })),
-      services: services
-        .filter((s) => s.name.trim() && s.price.trim())
-        .map((s) => ({
-          name: s.name.trim(),
+        services: services.filter(s => s.name.trim() && s.price).map(s => ({
+          name: s.name,
           price: s.price,
           duration: s.duration,
         })),
-    });
+      });
 
-    setIsLaunching(false);
+      toast.success("Your barbershop is live!");
+      router.push("/dashboard");
 
-    if (error) {
-      toast.error(error);
-      return;
+    } catch (error: any) {
+      console.error("Onboarding failed:", error);
+      toast.error(error.message || "An unexpected error occurred.");
+    } finally {
+      setIsLaunching(false);
     }
-
-    toast.success("Your barbershop is live!");
-    router.push(`/dashboard`);
   };
 
   // --- Validation ---
@@ -280,18 +319,20 @@ export default function OnboardingPage() {
               <div className="space-y-6">
                 {/* Logo */}
                 <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-400 dark:text-slate-500 overflow-hidden relative cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                    {shopLogo ? (
-                      <div className="w-full h-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl uppercase">
-                        {shopName ? shopName.charAt(0) : "B"}
-                      </div>
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-400 dark:text-slate-500 overflow-hidden relative cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                  >
+                    {shopLogoPreview ? (
+                      <img src={shopLogoPreview} alt="Shop Logo Preview" className="w-full h-full object-cover" />
                     ) : (
                       <PlusIcon className="w-6 h-6" />
                     )}
                     <input
+                      ref={fileInputRef}
                       type="file"
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      onChange={(e) => setShopLogo(e.target.files?.[0] ? "uploaded" : null)}
+                      className="hidden"
+                      onChange={handleLogoChange}
                       title="Upload Logo"
                       accept="image/*"
                     />

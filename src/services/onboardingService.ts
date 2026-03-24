@@ -34,6 +34,7 @@ export interface OnboardingPayload {
     description?: string;
     phone?: string;
     address?: string;
+    logoUrl?: string;
   };
   barbers: OnboardingBarber[];
   services: OnboardingServiceItem[];

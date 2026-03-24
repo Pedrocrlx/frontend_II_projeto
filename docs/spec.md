@@ -219,10 +219,10 @@ Grid is a multi-tenant SaaS platform that enables barbershops to create professi
 
 ### **Chunk 6: Admin Dashboard** (IN PROGRESS 🔄)
 * **Dashboard Layout** (`/dashboard`) ✅
-  * Protected routes (auth + subscription check) ✅
-  * Navigation with user menu and logout ✅
-  * Language selector in navbar ✅
-  * Theme toggle in navbar ✅
+  * Protected routes (auth + subscription check) 
+  * Navigation with user menu and logout 
+  * Language selector in navbar 
+  * Theme toggle in navbar 
 * **i18n — Internationalisation System** ✅
   * Custom lightweight i18n (no external dependencies)
   * `I18nContext` + `useI18n()` hook with `localStorage` persistence
@@ -231,16 +231,19 @@ Grid is a multi-tenant SaaS platform that enables barbershops to create professi
   * Supported languages: Português, English, Français, Español, Deutsch
   * Translation files: `src/lib/i18n/{pt,en,fr,es,de}.ts`
   * Covers: Navbar, Hero, Features, Stats, HowItWorks, Pricing, FinalCTA, Footer, Dashboard
-* **Overview Page**
+* **Supabase Bucket for Barber Shop logo and barbers avatar** ✅
+  * Store Barber Shop "logoUrl" field on "photos" bucket
+  * Store Barbers "imageUrl" field on "photos" bucket
+* **Overview Page** 
   * Key metrics (bookings, revenue)
   * Recent bookings list
   * Quick actions
-* **Barbers Management** (`/dashboard/barbers`)
+* **Barbers Management** (`/dashboard/barbers`) ✅
   * List view with search/filter
   * Create/Edit/Delete barbers
   * Photo upload to Supabase Storage
   * Limit enforcement (max 10)
-* **Services Management** (`/dashboard/services`)
+* **Services Management** (`/dashboard/services`) ✅
   * List view with search/filter
   * Create/Edit/Delete services
   * Limit enforcement (max 20)
@@ -248,7 +251,7 @@ Grid is a multi-tenant SaaS platform that enables barbershops to create professi
   * Calendar view
   * List view with filters
   * Booking details modal
-* **Settings** (`/dashboard/settings`)
+* **Settings** (`/dashboard/settings`) ✅
   * Shop details (name, description)
   * Slug management (with validation)
   * Danger zone (delete account)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
 import { DashboardManagementLayout } from "../_components/DashboardManagementLayout";
@@ -11,6 +11,7 @@ import {
   deleteBarber,
   BarberData 
 } from "@/app/_actions/dashboard-barbers";
+import { StorageService } from "@/services/storageService";
 import { toast } from "sonner";
 import { 
   Drawer, 
@@ -69,6 +70,8 @@ export default function BarbersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -77,6 +80,7 @@ export default function BarbersPage() {
     description: "",
     phone: "",
     instagram: "",
+    imageUrl: "",
   });
 
   const fetchShopData = useCallback(async () => {
@@ -105,7 +109,7 @@ export default function BarbersPage() {
 
   const handleOpenAdd = () => {
     setEditingId(null);
-    setFormData({ name: "", description: "", phone: "", instagram: "" });
+    setFormData({ name: "", description: "", phone: "", instagram: "", imageUrl: "" });
     setIsDrawerOpen(true);
   };
 
@@ -116,8 +120,48 @@ export default function BarbersPage() {
       description: barber.description || "",
       phone: barber.phone || "",
       instagram: barber.instagram || "",
+      imageUrl: barber.imageUrl || "",
     });
     setIsDrawerOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image size must be less than 2MB");
+      return;
+    }
+
+    setIsUploading(true);
+    const toastId = toast.loading("Uploading image...");
+
+    try {
+      const publicUrl = await StorageService.uploadImage(file, 'barbers');
+      setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
+      
+      // If we are editing an existing barber, update the image URL immediately
+      if (editingId) {
+        const result = await updateBarber(editingId, { imageUrl: publicUrl });
+        if (result.error) throw new Error(result.error);
+        toast.success("Image uploaded and saved!", { id: toastId });
+        fetchShopData(); // Refresh data
+      } else {
+        toast.success("Image uploaded! Save the new barber to apply it.", { id: toastId });
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Upload failed", { id: toastId });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -309,6 +353,46 @@ export default function BarbersPage() {
           <form onSubmit={handleSubmit} className="p-6 pt-0 space-y-5">
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                Photo
+              </label>
+              <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center relative">
+                  {formData.imageUrl ? (
+                    <img src={formData.imageUrl} alt="Barber Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold text-slate-400">NO PHOTO</span>
+                  )}
+                  {isUploading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <p className="text-xs text-slate-500">Max 2MB</p>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading || isSubmitting}
+                    className="h-8 text-xs font-bold rounded-lg"
+                  >
+                    {formData.imageUrl ? "Change Photo" : "Upload Photo"}
+                  </Button>
+                  <input 
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
                 {t.dashboard.barbers.name} *
               </label>
               <Input 
@@ -358,7 +442,7 @@ export default function BarbersPage() {
             </div>
 
             <DrawerFooter className="px-0 pt-6">
-              <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 rounded-xl text-base shadow-lg shadow-blue-500/20">
+              <Button type="submit" disabled={isSubmitting || isUploading} className="w-full font-bold h-12 rounded-xl text-base shadow-lg shadow-blue-500/20">
                 {isSubmitting ? t.dashboard.barbers.processing : editingId ? t.dashboard.barbers.saveChanges : t.dashboard.barbers.createBarber}
               </Button>
               <DrawerClose asChild>

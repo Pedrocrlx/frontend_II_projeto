@@ -65,8 +65,12 @@ export default async function BarberPage({ params }: PageProps) {
       <nav className="fixed top-0 w-full z-50 bg-[#FAFAFA]/90 backdrop-blur-md border-b border-slate-200/50">
         <div className="max-w-4xl mx-auto px-6 h-20 flex justify-between items-center">
           <Link href={`/${barber.slug}`} className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xl group-hover:bg-slate-800 transition-colors">
-              {barber.name.charAt(0)}
+            <div className="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xl group-hover:bg-slate-800 transition-colors overflow-hidden">
+              {barber.logoUrl ? (
+                <img src={barber.logoUrl} alt={`${barber.name} logo`} className="w-full h-full object-cover" />
+              ) : (
+                barber.name.charAt(0)
+              )}
             </div>
             <span className="text-xl font-extrabold tracking-tight text-slate-900">
               {barber.name}
@@ -84,9 +88,11 @@ export default async function BarberPage({ params }: PageProps) {
       {/* Hero Section */}
       <section className="pt-40 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 text-slate-900 mb-8">
-            <ScissorsIcon className="w-8 h-8" />
-          </div>
+          {barber.logoUrl && (
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-slate-100 text-slate-900 mb-8 overflow-hidden">
+              <img src={barber.logoUrl} alt={`${barber.name} logo`} className="w-full h-full object-cover" />
+            </div>
+          )}
           
           <h1 className="text-2xl md:text-7xl font-black tracking-tighter text-slate-900 mb-6 leading-[1.1]">
             {barber.name}
@@ -191,10 +197,14 @@ export default async function BarberPage({ params }: PageProps) {
             {barber.barbers && barber.barbers.length > 0 ? (
               barber.barbers.map((b) => (
                 <div key={b.id} className="text-center group w-40">
-                  <div className="w-28 h-28 mx-auto bg-white border border-slate-200 rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:shadow-xl group-hover:border-slate-300 transition-all duration-300 group-hover:-translate-y-2">
-                    <span className="text-3xl font-black text-slate-900">
-                      {b.name.charAt(0)}
-                    </span>
+                  <div className="w-28 h-28 mx-auto bg-white border border-slate-200 rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:shadow-xl group-hover:border-slate-300 transition-all duration-300 group-hover:-translate-y-2 overflow-hidden">
+                    {b.imageUrl ? (
+                      <img src={b.imageUrl} alt={b.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl font-black text-slate-900">
+                        {b.name.charAt(0)}
+                      </span>
+                    )}
                   </div>
                   <h3 className="text-lg font-bold text-slate-900">{b.name}</h3>
                   <p className="text-sm text-slate-500 mt-1">{b.description || "Barber"}</p>

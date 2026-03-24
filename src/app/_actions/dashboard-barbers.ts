@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { StorageService } from "@/services/storageService";
 
 export interface BarberData {
   name: string;
@@ -64,6 +65,12 @@ export async function createBarber(barberShopId: string, data: BarberData) {
 
 export async function updateBarber(id: string, data: Partial<BarberData>) {
   try {
+    const existingBarber = await prisma.barber.findUnique({ where: { id } });
+
+    if (existingBarber?.imageUrl && data.imageUrl && existingBarber.imageUrl !== data.imageUrl) {
+      await StorageService.deleteImage(existingBarber.imageUrl);
+    }
+
     const barber = await prisma.barber.update({
       where: { id },
       data,
@@ -79,6 +86,12 @@ export async function updateBarber(id: string, data: Partial<BarberData>) {
 
 export async function deleteBarber(id: string) {
   try {
+    const barber = await prisma.barber.findUnique({ where: { id } });
+
+    if (barber?.imageUrl) {
+      await StorageService.deleteImage(barber.imageUrl);
+    }
+
     await prisma.barber.delete({
       where: { id },
     });

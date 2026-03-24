@@ -10,6 +10,7 @@ jest.mock("@/lib/prisma", () => ({
     barber: {
       count: jest.fn(),
       create: jest.fn(),
+      findUnique: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     },
@@ -19,6 +20,14 @@ jest.mock("@/lib/prisma", () => ({
 // Mock next/cache
 jest.mock("next/cache", () => ({
   revalidatePath: jest.fn(),
+}));
+
+// Mock StorageService to avoid uuid import issues
+jest.mock("@/services/storageService", () => ({
+  StorageService: {
+    uploadImage: jest.fn(),
+    deleteImage: jest.fn(),
+  },
 }));
 
 type MockFn = jest.Mock;

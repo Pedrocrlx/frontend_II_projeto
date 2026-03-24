@@ -21,6 +21,7 @@ export interface BarberShopData {
   slug: string;
   name: string;
   address: string;
+  logoUrl?: string;
   instagram?: string | null;
   description?: string | null;
   phone?: string | null;

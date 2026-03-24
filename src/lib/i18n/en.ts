@@ -100,6 +100,7 @@ const en = {
     subtitle: "Manage your barbershop, team, and bookings from one centralized workspace.",
     account: "Account",
     signOut: "Sign out",
+    backToDashboard: "Back to Dashboard",
     loadingTitle: "Loading dashboard",
     loadingSubtitle: "Preparing your workspace…",
     cards: {
@@ -179,6 +180,57 @@ const en = {
       successDeleted: "Barber removed.",
       deleteConfirm: "Are you sure you want to remove this barber?",
       errorDelete: "Failed to remove barber.",
+    },
+    bookings: {
+      title: "Bookings",
+      subtitle: "View and manage your customer appointments.",
+      noBookings: "No bookings found.",
+      noBookingsForDate: "No bookings for this date.",
+      loadError: "Failed to load bookings.",
+      // View toggle
+      calendarView: "Calendar",
+      listView: "List",
+      // Filters
+      allBarbers: "All Barbers",
+      allStatuses: "All Statuses",
+      filterByBarber: "Filter by barber",
+      filterByStatus: "Filter by status",
+      today: "Today",
+      // Status labels
+      statusPending: "Pending",
+      statusConfirmed: "Confirmed",
+      statusCanceled: "Canceled",
+      // Booking card
+      customer: "Customer",
+      phone: "Phone",
+      service: "Service",
+      barber: "Barber",
+      duration: "Duration",
+      price: "Price",
+      status: "Status",
+      bookedAt: "Booked at",
+      // Actions
+      confirm: "Confirm",
+      cancel: "Cancel",
+      delete: "Delete",
+      viewDetails: "View Details",
+      close: "Close",
+      // Confirmation dialogs
+      confirmBookingTitle: "Confirm Booking",
+      confirmBookingMessage: "Are you sure you want to confirm this booking?",
+      cancelBookingTitle: "Cancel Booking",
+      cancelBookingMessage: "Are you sure you want to cancel this booking?",
+      deleteBookingTitle: "Delete Booking",
+      deleteBookingMessage: "Are you sure you want to delete this booking? This action cannot be undone.",
+      // Success/Error messages
+      successConfirmed: "Booking confirmed!",
+      successCanceled: "Booking canceled.",
+      successDeleted: "Booking deleted.",
+      errorConfirm: "Failed to confirm booking.",
+      errorCancel: "Failed to cancel booking.",
+      errorDelete: "Failed to delete booking.",
+      // Time
+      minutes: "min",
     },
   },
 } as const;
