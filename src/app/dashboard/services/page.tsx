@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useI18n } from "@/contexts/I18nContext";
 import { DashboardManagementLayout } from "../_components/DashboardManagementLayout";
 import { 
   getShopByUserId, 
@@ -55,7 +56,7 @@ type Service = {
   id: string;
   name: string;
   description: string | null;
-  price: any; // Decimal from Prisma
+  price: string; // Decimal from Prisma
   duration: number;
 };
 
@@ -64,6 +65,7 @@ const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120];
 
 export default function ServicesPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [shop, setShop] = useState<any>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,7 +95,7 @@ export default function ServicesPage() {
       }
     } catch (error) {
       console.error("Error fetching shop data:", error);
-      toast.error("Failed to load services.");
+      toast.error(t.dashboard.services.errorTitle);
     } finally {
       setIsLoading(false);
     }
@@ -124,17 +126,17 @@ export default function ServicesPage() {
     e.preventDefault();
     
     if (!user?.id) {
-      toast.error("User not authenticated.");
+      toast.error(t.dashboard.services.errorNotAuth);
       return;
     }
 
     if (!shop?.id) {
-      toast.error("Shop not found. Please complete onboarding.");
+      toast.error(t.dashboard.services.errorNoShop);
       return;
     }
 
     if (!formData.name.trim()) {
-      toast.error("Please enter a service name.");
+      toast.error(t.dashboard.services.errorNoName);
       return;
     }
 
@@ -143,33 +145,33 @@ export default function ServicesPage() {
       if (editingId) {
         const result = await updateService(editingId, formData);
         if (result.error) throw new Error(result.error);
-        toast.success("Service updated successfully!");
+        toast.success(t.dashboard.services.successUpdated);
       } else {
         const result = await createService(shop.id, formData);
         if (result.error) throw new Error(result.error);
-        toast.success("Service created successfully!");
+        toast.success(t.dashboard.services.successCreated);
       }
       setIsDrawerOpen(false);
       fetchShopData();
     } catch (error: any) {
       console.error("Submission error:", error);
-      toast.error(error.message || "Something went wrong.");
+      toast.error(error.message || t.dashboard.services.errorGeneric);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this service?")) return;
+    if (!confirm(t.dashboard.services.deleteConfirm)) return;
 
     try {
       const result = await deleteService(id);
       if (result.error) throw new Error(result.error);
-      toast.success("Service deleted.");
+      toast.success(t.dashboard.services.successDeleted);
       fetchShopData();
     } catch (error: any) {
       console.error("Delete error:", error);
-      toast.error(error.message || "Failed to delete service.");
+      toast.error(error.message || t.dashboard.services.errorDelete);
     }
   };
 
@@ -177,14 +179,14 @@ export default function ServicesPage() {
 
   return (
     <DashboardManagementLayout 
-      title="Services" 
-      subtitle="Manage your catalog, pricing, and durations."
+      title={t.dashboard.services.title} 
+      subtitle={t.dashboard.services.subtitle}
     >
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
-              {services.length} / 20 Services
+              {services.length} / 20 {t.dashboard.services.counter}
             </h2>
           </div>
           <Button 
@@ -193,7 +195,7 @@ export default function ServicesPage() {
             className="rounded-xl font-bold gap-2 w-full sm:w-auto"
           >
             <PlusIcon className="w-4 h-4" />
-            Add Service
+            {t.dashboard.services.addButton}
           </Button>
         </div>
 
@@ -205,9 +207,9 @@ export default function ServicesPage() {
           </div>
         ) : services.length === 0 ? (
           <div className="text-center py-20 bg-slate-50 dark:bg-slate-900/40 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
-            <p className="text-slate-500 mb-4 font-medium">No services configured yet.</p>
+            <p className="text-slate-500 mb-4 font-medium">{t.dashboard.services.noServices}</p>
             <Button variant="outline" onClick={handleOpenAdd} className="rounded-xl font-bold">
-              Create your first service
+              {t.dashboard.services.createFirst}
             </Button>
           </div>
         ) : (
@@ -240,7 +242,7 @@ export default function ServicesPage() {
                 </div>
 
                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2 h-10">
-                  {service.description || "No description provided."}
+                  {service.description || t.dashboard.services.descriptionPlaceholder}
                 </p>
 
                 <div className="flex items-center gap-3">
@@ -248,7 +250,7 @@ export default function ServicesPage() {
                     ${Number(service.price).toFixed(2)}
                   </div>
                   <div className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-3 py-1 rounded-lg text-sm font-bold">
-                    {service.duration} min
+                    {service.duration} {t.dashboard.services.durationMin}
                   </div>
                 </div>
               </div>
@@ -260,17 +262,17 @@ export default function ServicesPage() {
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
         <DrawerContent className="sm:max-w-md mx-auto">
           <DrawerHeader>
-            <DrawerTitle className="text-2xl font-black">{editingId ? "Edit Service" : "New Service"}</DrawerTitle>
+            <DrawerTitle className="text-2xl font-black">{editingId ? t.dashboard.services.formTitleEdit : t.dashboard.services.formTitleNew}</DrawerTitle>
             <DrawerDescription className="font-medium">
-              {editingId ? "Update your service details below." : "Add a new offering to your barbershop menu."}
+              {editingId ? t.dashboard.services.formDescEdit : t.dashboard.services.formDescNew}
             </DrawerDescription>
           </DrawerHeader>
 
           <form onSubmit={handleSubmit} className="p-6 pt-0 space-y-5">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Service Name *</label>
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.serviceName}</label>
               <Input 
-                placeholder="e.g. Premium Haircut" 
+                placeholder={t.dashboard.services.serviceNamePlaceholder} 
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
@@ -279,9 +281,9 @@ export default function ServicesPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Description (Optional)</label>
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.description}</label>
               <Input 
-                placeholder="Include details about the service..." 
+                placeholder={t.dashboard.services.descriptionPlaceholder} 
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="h-11 rounded-xl"
@@ -290,7 +292,7 @@ export default function ServicesPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2 relative">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Price ($) *</label>
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.price}</label>
                 <div className="relative">
                   <select 
                     value={formData.price}
@@ -307,7 +309,7 @@ export default function ServicesPage() {
                 </div>
               </div>
               <div className="space-y-2 relative">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Duration *</label>
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.duration}</label>
                 <div className="relative">
                   <select 
                     value={formData.duration}
@@ -315,7 +317,7 @@ export default function ServicesPage() {
                     className={selectBaseClass}
                   >
                     {DURATION_OPTIONS.map((d) => (
-                      <option key={d} value={d}>{d} min</option>
+                      <option key={d} value={d}>{d} {t.dashboard.services.durationMin}</option>
                     ))}
                   </select>
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
@@ -327,10 +329,10 @@ export default function ServicesPage() {
 
             <DrawerFooter className="px-0 pt-6">
               <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 rounded-xl text-base shadow-lg shadow-blue-500/20">
-                {isSubmitting ? "Processing..." : editingId ? "Save Changes" : "Create Service"}
+                {isSubmitting ? t.dashboard.services.processing : editingId ? t.dashboard.services.saveChanges : t.dashboard.services.createService}
               </Button>
               <DrawerClose asChild>
-                <Button variant="outline" className="w-full font-bold h-12 rounded-xl">Cancel</Button>
+                <Button variant="outline" className="w-full font-bold h-12 rounded-xl">{t.dashboard.services.cancel}</Button>
               </DrawerClose>
             </DrawerFooter>
           </form>

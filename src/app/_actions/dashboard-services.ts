@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 export interface ServiceData {
   name: string;
   description?: string;
-  price: number;
+  price: number | string; // Accept both number and string for price because Prisma's Decimal can be returned as a string
   duration: number;
 }
 
@@ -23,7 +23,18 @@ export async function getShopByUserId(supabaseId: string) {
       },
     });
 
-    return user?.barberShop || null;
+    if (!user?.barberShop) return null;
+
+    // Transform services to convert Decimal to string
+    // This is necessary because Prisma's Decimal type cannot be directly serialized to JSON
+    return {
+      ...user.barberShop,
+      services: user.barberShop.services.map((service) => ({
+        ...service,
+        price: service.price.toString(), // Convert Decimal to string
+      })),
+    };
+
   } catch (error) {
     console.error("Error fetching shop:", error);
     return null;
@@ -49,7 +60,7 @@ export async function createService(barberShopId: string, data: ServiceData) {
     });
 
     revalidatePath("/dashboard/services");
-    return { service };
+    return { service: { ...service, price: service.price.toString() } }; // Convert Decimal to string
   } catch (error) {
     console.error("Error creating service:", error);
     return { error: "Failed to create service." };
@@ -64,7 +75,7 @@ export async function updateService(id: string, data: Partial<ServiceData>) {
     });
 
     revalidatePath("/dashboard/services");
-    return { service };
+    return { service: { ...service, price: service.price.toString() } }; // Convert Decimal to string
   } catch (error) {
     console.error("Error updating service:", error);
     return { error: "Failed to update service." };

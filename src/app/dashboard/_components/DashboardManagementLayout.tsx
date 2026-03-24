@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelect } from "@/components/LanguageSelect";
 import GridIcon from "@/components/landing/GridIcon";
 
 interface DashboardLayoutProps {
@@ -63,8 +64,7 @@ export function DashboardManagementLayout({
               <span className="text-xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">Grid</span>
             </Link>
 
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
+            <div className="flex items-center gap-4">              <LanguageSelect />              <ThemeToggle />
               <div className="hidden sm:block text-right">
                 <p className="text-[10px] font-bold tracking-widest uppercase text-slate-400 dark:text-slate-500">Account</p>
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-200 truncate max-w-[200px]">{user?.email}</p>

@@ -84,7 +84,11 @@ describe("Dashboard Services Actions", () => {
   describe("updateService", () => {
     it("should update a service", async () => {
       const updateData = { name: "Updated Name" };
-      (prisma.service.update as jest.Mock).mockResolvedValue({ id: mockServiceId, ...updateData });
+      (prisma.service.update as jest.Mock).mockResolvedValue({ 
+        id: mockServiceId, 
+        ...updateData,
+        price: { toString: () => "20" }  // Mock Decimal with toString method
+      });
 
       const result = await updateService(mockServiceId, updateData);
       expect(result.service).toBeDefined();
