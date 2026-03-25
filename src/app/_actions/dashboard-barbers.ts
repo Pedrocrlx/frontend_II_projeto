@@ -87,8 +87,21 @@ export async function updateBarber(id: string, data: Partial<BarberData>) {
 export async function deleteBarber(id: string) {
   try {
     const barber = await prisma.barber.findUnique({ where: { id } });
+    
+    if (!barber) {
+      return { error: "Barber not found." };
+    }
 
-    if (barber?.imageUrl) {
+    // Check minimum barber requirement (at least 1 barber must remain)
+    const barberCount = await prisma.barber.count({
+      where: { barberShopId: barber.barberShopId },
+    });
+
+    if (barberCount <= 1) {
+      return { error: "Cannot delete the last barber. At least 1 barber is required." };
+    }
+
+    if (barber.imageUrl) {
       await StorageService.deleteImage(barber.imageUrl);
     }
 

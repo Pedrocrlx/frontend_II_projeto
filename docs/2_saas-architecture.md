@@ -377,7 +377,6 @@ Response: { barberShopId: string, slug: string }
 
 ```
 Dashboard
-├── Overview (stats, recent bookings)
 ├── Barbers (CRUD)
 ├── Services (CRUD)
 ├── Bookings (calendar view, list view)
@@ -385,20 +384,6 @@ Dashboard
 ├── Settings (shop details, slug)
 └── Billing (subscription, invoices)
 ```
-
-### 9.2 Overview Page
-
-**Metrics:**
-- Total bookings this month
-- Revenue this month
-- Most popular service
-- Most booked barber
-- Upcoming bookings (next 7 days)
-
-**Quick Actions:**
-- Add new barber
-- Add new service
-- View public page
 
 ## 10. Technical Considerations
 

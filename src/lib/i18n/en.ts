@@ -104,7 +104,6 @@ const en = {
     loadingTitle: "Loading dashboard",
     loadingSubtitle: "Preparing your workspace…",
     cards: {
-      overview: { title: "Overview", description: "View your booking statistics and business metrics" },
       barbers: { title: "Barbers", description: "Manage your barbers and their profiles" },
       services: { title: "Services", description: "Manage services and pricing" },
       bookings: { title: "Bookings", description: "View and manage customer bookings" },
@@ -231,6 +230,54 @@ const en = {
       errorDelete: "Failed to delete booking.",
       // Time
       minutes: "min",
+    },
+    settings: {
+      title: "Settings",
+      subtitle: "Manage your barbershop details and appearance.",
+      // Logo section
+      shopLogo: "Shop Logo",
+      uploadBranding: "Upload your branding",
+      logoHint: "JPG, PNG or WEBP. Max 2MB.",
+      logoPlaceholder: "LOGO",
+      selectImage: "Select Image",
+      // Form labels
+      shopName: "Shop Name",
+      shopNamePlaceholder: "Enter shop name",
+      description: "Description",
+      descriptionPlaceholder: "Brief description of your shop",
+      phoneNumber: "Phone Number",
+      phonePlaceholder: "+351...",
+      instagramAccount: "Instagram Account",
+      instagramPlaceholder: "@username",
+      // Actions
+      saveSettings: "Save Settings",
+      // Toast messages
+      errorImageType: "Please upload an image file",
+      errorImageSize: "Image size must be less than 2MB",
+      uploadingLogo: "Uploading logo...",
+      logoUploaded: "Logo uploaded and saved!",
+      uploadFailed: "Failed to upload logo",
+      savingSettings: "Saving settings...",
+      settingsSaved: "Settings saved successfully!",
+      saveFailed: "Failed to save settings",
+      // Common actions (shared with other pages)
+      edit: "Edit",
+      delete: "Delete",
+    },
+    // Common actions shared across pages
+    common: {
+      edit: "Edit",
+      delete: "Delete",
+      noPhoto: "NO PHOTO",
+      maxSize: "Max 2MB",
+      changePhoto: "Change Photo",
+      uploadPhoto: "Upload Photo",
+      uploadingImage: "Uploading image...",
+      imageUploaded: "Image uploaded and saved!",
+      imageUploadedNew: "Image uploaded! Save the new barber to apply it.",
+      uploadFailed: "Upload failed",
+      errorImageType: "Please upload an image file",
+      errorImageSize: "Image size must be less than 2MB",
     },
   },
 } as const;

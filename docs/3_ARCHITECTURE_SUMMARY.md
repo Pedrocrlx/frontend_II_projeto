@@ -97,7 +97,6 @@ Grid is a multi-tenant SaaS platform where barbershop owners can create professi
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  Dashboard (/dashboard)                                             │
-│  ├─ Overview (metrics, recent bookings)                             │
 │  ├─ Barbers Management (CRUD, max 10)                               │
 │  ├─ Services Management (CRUD, max 20)                              │
 │  ├─ Bookings View (calendar, list)                                  │

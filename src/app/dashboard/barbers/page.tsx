@@ -24,6 +24,14 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { COUNTRY_CONFIGS, validateInternationalPhone } from "@/lib/utils/phone-validation";
 
 // --- Icons ---
 function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -71,6 +79,7 @@ export default function BarbersPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<string>("PT");
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form State
@@ -107,40 +116,59 @@ export default function BarbersPage() {
     fetchShopData();
   }, [fetchShopData]);
 
-  const handleOpenAdd = () => {
+  const handleOpenAdd = useCallback(() => {
     setEditingId(null);
     setFormData({ name: "", description: "", phone: "", instagram: "", imageUrl: "" });
+    setSelectedCountry("PT"); // Default to Portugal
     setIsDrawerOpen(true);
-  };
+  }, []);
 
-  const handleOpenEdit = (barber: Barber) => {
+  const handleOpenEdit = useCallback((barber: Barber) => {
     setEditingId(barber.id);
+    
+    // Detect country code from phone number
+    let detectedCountry = "PT";
+    let localPhone = barber.phone || "";
+    
+    if (barber.phone) {
+      // Check if phone starts with a dial code
+      for (const [countryCode, config] of Object.entries(COUNTRY_CONFIGS)) {
+        if (barber.phone.startsWith(config.dialCode)) {
+          detectedCountry = countryCode;
+          // Remove dial code to get local number
+          localPhone = barber.phone.substring(config.dialCode.length);
+          break;
+        }
+      }
+    }
+    
+    setSelectedCountry(detectedCountry);
     setFormData({
       name: barber.name,
       description: barber.description || "",
-      phone: barber.phone || "",
+      phone: localPhone,
       instagram: barber.instagram || "",
       imageUrl: barber.imageUrl || "",
     });
     setIsDrawerOpen(true);
-  };
+  }, []);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error("Please upload an image file");
+      toast.error(t.dashboard.common.errorImageType);
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image size must be less than 2MB");
+      toast.error(t.dashboard.common.errorImageSize);
       return;
     }
 
     setIsUploading(true);
-    const toastId = toast.loading("Uploading image...");
+    const toastId = toast.loading(t.dashboard.common.uploadingImage);
 
     try {
       const publicUrl = await StorageService.uploadImage(file, 'barbers');
@@ -150,21 +178,21 @@ export default function BarbersPage() {
       if (editingId) {
         const result = await updateBarber(editingId, { imageUrl: publicUrl });
         if (result.error) throw new Error(result.error);
-        toast.success("Image uploaded and saved!", { id: toastId });
+        toast.success(t.dashboard.common.imageUploaded, { id: toastId });
         fetchShopData(); // Refresh data
       } else {
-        toast.success("Image uploaded! Save the new barber to apply it.", { id: toastId });
+        toast.success(t.dashboard.common.imageUploadedNew, { id: toastId });
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Upload failed", { id: toastId });
+      toast.error(t.dashboard.common.uploadFailed, { id: toastId });
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
-  };
+  }, [editingId, fetchShopData, t.dashboard.common]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user?.id) {
@@ -187,14 +215,27 @@ export default function BarbersPage() {
       return;
     }
 
+    // Validate international phone number
+    const phoneValidation = validateInternationalPhone(formData.phone, selectedCountry);
+    if (!phoneValidation.isValid) {
+      toast.error(phoneValidation.error || "Invalid phone number format");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      // Use the validated full international phone number
+      const dataToSubmit = {
+        ...formData,
+        phone: phoneValidation.fullNumber || formData.phone,
+      };
+      
       if (editingId) {
-        const result = await updateBarber(editingId, formData);
+        const result = await updateBarber(editingId, dataToSubmit);
         if (result.error) throw new Error(result.error);
         toast.success(t.dashboard.barbers.successUpdated);
       } else {
-        const result = await createBarber(shop.id, formData);
+        const result = await createBarber(shop.id, dataToSubmit);
         if (result.error) throw new Error(result.error);
         toast.success(t.dashboard.barbers.successCreated);
       }
@@ -206,9 +247,9 @@ export default function BarbersPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [user?.id, shop?.id, formData, editingId, fetchShopData, t.dashboard.barbers]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm(t.dashboard.barbers.deleteConfirm)) return;
 
     try {
@@ -220,16 +261,16 @@ export default function BarbersPage() {
       console.error("Delete error:", error);
       toast.error(error.message || t.dashboard.barbers.errorDelete);
     }
-  };
+  }, [fetchShopData, t.dashboard.barbers]);
 
-  const getInitials = (name: string): string => {
+  const getInitials = useCallback((name: string): string => {
     return name
       .split(" ")
       .map((part) => part[0])
       .join("")
       .toUpperCase()
       .slice(0, 2);
-  };
+  }, []);
 
   return (
     <DashboardManagementLayout 
@@ -290,14 +331,14 @@ export default function BarbersPage() {
                     <button 
                       onClick={() => handleOpenEdit(barber)}
                       className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                      title="Edit"
+                      title={t.dashboard.common.edit}
                     >
                       <EditIcon className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleDelete(barber.id)}
                       className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                      title="Delete"
+                      title={t.dashboard.common.delete}
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>
@@ -353,14 +394,14 @@ export default function BarbersPage() {
           <form onSubmit={handleSubmit} className="p-6 pt-0 space-y-5">
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                Photo
+                {t.dashboard.barbers.photo}
               </label>
               <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
                 <div className="w-16 h-16 rounded-full overflow-hidden bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center relative">
                   {formData.imageUrl ? (
                     <img src={formData.imageUrl} alt="Barber Preview" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-xs font-bold text-slate-400">NO PHOTO</span>
+                    <span className="text-xs font-bold text-slate-400">{t.dashboard.common.noPhoto}</span>
                   )}
                   {isUploading && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -369,7 +410,7 @@ export default function BarbersPage() {
                   )}
                 </div>
                 <div className="flex-1 space-y-2">
-                  <p className="text-xs text-slate-500">Max 2MB</p>
+                  <p className="text-xs text-slate-500">{t.dashboard.common.maxSize}</p>
                   <Button 
                     type="button" 
                     variant="outline" 
@@ -378,7 +419,7 @@ export default function BarbersPage() {
                     disabled={isUploading || isSubmitting}
                     className="h-8 text-xs font-bold rounded-lg"
                   >
-                    {formData.imageUrl ? "Change Photo" : "Upload Photo"}
+                    {formData.imageUrl ? t.dashboard.common.changePhoto : t.dashboard.common.uploadPhoto}
                   </Button>
                   <input 
                     type="file"
@@ -393,7 +434,7 @@ export default function BarbersPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                {t.dashboard.barbers.name} *
+                {t.dashboard.barbers.name}
               </label>
               <Input 
                 placeholder={t.dashboard.barbers.namePlaceholder}
@@ -418,15 +459,35 @@ export default function BarbersPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                {t.dashboard.barbers.phone} *
+                {t.dashboard.barbers.phone}
               </label>
-              <Input 
-                placeholder={t.dashboard.barbers.phonePlaceholder}
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                required
-                className="h-11 rounded-xl"
-              />
+              <div className="grid grid-cols-[120px_1fr] gap-3">
+                <div>
+                  <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                    <SelectTrigger className="h-11 px-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 text-sm font-medium">
+                      <SelectValue placeholder="Code" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(COUNTRY_CONFIGS).map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          {country.code} ({country.dialCode})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Input 
+                  placeholder={COUNTRY_CONFIGS[selectedCountry].placeholder}
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  required
+                  maxLength={COUNTRY_CONFIGS[selectedCountry].maxLength}
+                  className="h-11 rounded-xl"
+                />
+              </div>
+              <p className="text-xs text-slate-500">
+                Example: {COUNTRY_CONFIGS[selectedCountry].dialCode} {COUNTRY_CONFIGS[selectedCountry].placeholder}
+              </p>
             </div>
 
             <div className="space-y-2">

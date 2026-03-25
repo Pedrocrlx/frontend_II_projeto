@@ -24,7 +24,6 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const dashboardCards: DashboardCardData[] = [
-    { title: t.dashboard.cards.overview.title, description: t.dashboard.cards.overview.description, icon: "blue", href: "/dashboard/bookings", isComingSoon: false },
     { title: t.dashboard.cards.barbers.title, description: t.dashboard.cards.barbers.description, icon: "green", href: "/dashboard/barbers", isComingSoon: false },
     { title: t.dashboard.cards.services.title, description: t.dashboard.cards.services.description, icon: "purple", href: "/dashboard/services", isComingSoon: false },
     { title: t.dashboard.cards.bookings.title, description: t.dashboard.cards.bookings.description, icon: "orange", href: "/dashboard/bookings", isComingSoon: false },

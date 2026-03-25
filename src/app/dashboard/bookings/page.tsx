@@ -380,8 +380,7 @@ export default function BookingsPage() {
               }`}
             >
               <CalendarIcon className="w-4 h-4" />
-              <span className="hidden xs:inline">{t.dashboard.bookings.calendarView}</span>
-              <span className="xs:hidden">Calendar</span>
+              <span>{t.dashboard.bookings.calendarView}</span>
             </button>
             <button
               type="button"
@@ -393,8 +392,7 @@ export default function BookingsPage() {
               }`}
             >
               <ListIcon className="w-4 h-4" />
-              <span className="hidden xs:inline">{t.dashboard.bookings.listView}</span>
-              <span className="xs:hidden">List</span>
+              <span>{t.dashboard.bookings.listView}</span>
             </button>
           </div>
 

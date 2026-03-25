@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { checkTimeSlotAvailability, clientHasBookingAtTime, createBooking } from "./create-booking";
+import { revalidatePath } from "next/cache";
 
 // Mock Prisma and next/cache
 jest.mock("@/lib/prisma", () => ({
@@ -21,6 +22,7 @@ import { prisma } from "@/lib/prisma";
 
 const mockFindMany = prisma.booking.findMany as jest.Mock;
 const mockCreate = prisma.booking.create as jest.Mock;
+const mockRevalidatePath = revalidatePath as jest.Mock;
 
 const baseParams = {
   serviceId: "service-1",
@@ -132,13 +134,14 @@ describe("clientHasBookingAtTime", () => {
 });
 
 describe("createBooking", () => {
-  it("should return 200 on successful booking creation", async () => {
+  it("should return 200 on successful booking creation and revalidate path", async () => {
     mockCreate.mockResolvedValue({ id: "new-booking" });
 
     const result = await createBooking(baseParams);
 
     expect(result.status).toBe(200);
     expect(result.message).toBe("Booking created successfully");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/[slug]");
   });
 
   it("should return 500 on database error", async () => {

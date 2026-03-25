@@ -231,14 +231,10 @@ Grid is a multi-tenant SaaS platform that enables barbershops to create professi
   * Supported languages: Português, English, Français, Español, Deutsch
   * Translation files: `src/lib/i18n/{pt,en,fr,es,de}.ts`
   * Covers: Navbar, Hero, Features, Stats, HowItWorks, Pricing, FinalCTA, Footer, Dashboard
-* **Supabase Bucket for Barber Shop logo and barbers avatar** ✅
-  * Store Barber Shop "logoUrl" field on "photos" bucket
-  * Store Barbers "imageUrl" field on "photos" bucket
-* **Overview Page** 
-  * Key metrics (bookings, revenue)
-  * Recent bookings list
-  * Quick actions
-* **Barbers Management** (`/dashboard/barbers`) ✅
+ * **Supabase Bucket for Barber Shop logo and barbers avatar** ✅
+   * Store Barber Shop "logoUrl" field on "photos" bucket
+   * Store Barbers "imageUrl" field on "photos" bucket
+ * **Barbers Management** (`/dashboard/barbers`) ✅
   * List view with search/filter
   * Create/Edit/Delete barbers
   * Photo upload to Supabase Storage
@@ -247,7 +243,7 @@ Grid is a multi-tenant SaaS platform that enables barbershops to create professi
   * List view with search/filter
   * Create/Edit/Delete services
   * Limit enforcement (max 20)
-* **Bookings View** (`/dashboard/bookings`)
+* **Bookings View** (`/dashboard/bookings`) ✅
   * Calendar view
   * List view with filters
   * Booking details modal

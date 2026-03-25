@@ -1,18 +1,22 @@
 /**
- * Integration tests for BookingSheet component
- * Verifies that all components work together correctly:
- * 1. Country selector updates phone validation
- * 2. Barber selection triggers availability fetch
- * 3. Calendar only shows available dates
- * 4. Booking submission includes country code
+ * Logic tests for BookingSheet component
+ * 
+ * NOTE: These are UNIT tests for the booking flow logic, NOT true integration tests.
+ * True integration tests would require rendering the actual React component with @testing-library/react.
+ * 
+ * These tests verify:
+ * 1. Country selector configuration and phone validation logic
+ * 2. Availability fetch parameter structure
+ * 3. Calendar date filtering logic
+ * 4. Booking submission data structure
  */
 
 import { validateInternationalPhone, COUNTRY_CONFIGS } from "@/lib/utils/phone-validation";
 
-describe("BookingSheet Integration Tests", () => {
+describe("BookingSheet Logic Tests", () => {
 
-  describe("Integration 1: Country selector updates phone validation", () => {
-    it("should update phone input placeholder when country changes", () => {
+  describe("Country selector and phone validation logic", () => {
+    it("should have correct configuration for each country", () => {
       // Test that country selector changes affect phone validation
       const ptConfig = COUNTRY_CONFIGS.PT;
       const brConfig = COUNTRY_CONFIGS.BR;
@@ -59,7 +63,7 @@ describe("BookingSheet Integration Tests", () => {
     });
   });
 
-  describe("Integration 2: Barber selection triggers availability fetch", () => {
+  describe("Barber selection and availability fetch parameters", () => {
     it("should verify availability fetch is called with correct parameters", () => {
       // Test that the availability function would be called with correct params
       const barberId = "barber-1";
@@ -114,7 +118,7 @@ describe("BookingSheet Integration Tests", () => {
     });
   });
 
-  describe("Integration 3: Calendar only shows available dates", () => {
+  describe("Calendar date filtering logic", () => {
     it("should verify calendar disabled logic for unavailable dates", () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -164,7 +168,7 @@ describe("BookingSheet Integration Tests", () => {
     });
   });
 
-  describe("Integration 4: Booking submission includes country code", () => {
+  describe("Booking submission data structure", () => {
     it("should validate phone number before submission", () => {
       // Test phone validation
       const validResult = validateInternationalPhone("912345678", "PT");
@@ -221,7 +225,7 @@ describe("BookingSheet Integration Tests", () => {
     });
   });
 
-  describe("End-to-end integration", () => {
+  describe("Complete booking flow logic", () => {
     it("should complete full booking flow with all integrations", () => {
       // Test 1: Country selector affects validation
       const selectedCountry = "BR";

@@ -84,6 +84,21 @@ export async function updateService(id: string, data: Partial<ServiceData>) {
 
 export async function deleteService(id: string) {
   try {
+    const service = await prisma.service.findUnique({ where: { id } });
+    
+    if (!service) {
+      return { error: "Service not found." };
+    }
+
+    // Check minimum service requirement (at least 1 service must remain)
+    const serviceCount = await prisma.service.count({
+      where: { barberShopId: service.barberShopId },
+    });
+
+    if (serviceCount <= 1) {
+      return { error: "Cannot delete the last service. At least 1 service is required." };
+    }
+
     await prisma.service.delete({
       where: { id },
     });

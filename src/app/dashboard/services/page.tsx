@@ -99,19 +99,19 @@ export default function ServicesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, t.dashboard.services.errorTitle]);
 
   useEffect(() => {
     fetchShopData();
   }, [fetchShopData]);
 
-  const handleOpenAdd = () => {
+  const handleOpenAdd = useCallback(() => {
     setEditingId(null);
     setFormData({ name: "", description: "", price: 15, duration: 30 });
     setIsDrawerOpen(true);
-  };
+  }, []);
 
-  const handleOpenEdit = (service: Service) => {
+  const handleOpenEdit = useCallback((service: Service) => {
     setEditingId(service.id);
     setFormData({
       name: service.name,
@@ -120,9 +120,9 @@ export default function ServicesPage() {
       duration: service.duration
     });
     setIsDrawerOpen(true);
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user?.id) {
@@ -159,9 +159,9 @@ export default function ServicesPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [user?.id, shop?.id, formData, editingId, fetchShopData, t.dashboard.services]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm(t.dashboard.services.deleteConfirm)) return;
 
     try {
@@ -173,7 +173,7 @@ export default function ServicesPage() {
       console.error("Delete error:", error);
       toast.error(error.message || t.dashboard.services.errorDelete);
     }
-  };
+  }, [fetchShopData, t.dashboard.services]);
 
   const selectBaseClass = "w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-blue-600/50 transition-all font-medium appearance-none";
 
@@ -227,14 +227,14 @@ export default function ServicesPage() {
                     <button 
                       onClick={() => handleOpenEdit(service)}
                       className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                      title="Edit"
+                      title={t.dashboard.common.edit}
                     >
                       <EditIcon className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleDelete(service.id)}
                       className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                      title="Delete"
+                      title={t.dashboard.common.delete}
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>

@@ -61,17 +61,17 @@ export default function SettingsPage() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error("Please upload an image file");
+      toast.error(t.dashboard.settings.errorImageType);
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image size must be less than 2MB");
+      toast.error(t.dashboard.settings.errorImageSize);
       return;
     }
 
     setIsSubmitting(true);
-    const toastId = toast.loading("Uploading logo...");
+    const toastId = toast.loading(t.dashboard.settings.uploadingLogo);
     
     try {
       const publicUrl = await StorageService.uploadImage(file, 'shops');
@@ -82,14 +82,14 @@ export default function SettingsPage() {
         if (result.error) throw new Error(result.error);
         
         setFormData(prev => ({ ...prev, logoUrl: publicUrl }));
-        toast.success("Logo uploaded and saved!", { id: toastId });
+        toast.success(t.dashboard.settings.logoUploaded, { id: toastId });
         fetchShopData(); // Refresh data to ensure consistency
       } else {
         throw new Error("Shop ID not found.");
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Failed to upload logo", { id: toastId });
+      toast.error(t.dashboard.settings.uploadFailed, { id: toastId });
     } finally {
       setIsSubmitting(false);
       // Reset file input
@@ -102,17 +102,17 @@ export default function SettingsPage() {
     if (!shop?.id) return;
 
     setIsSubmitting(true);
-    const toastId = toast.loading("Saving settings...");
+    const toastId = toast.loading(t.dashboard.settings.savingSettings);
 
     try {
       const result = await updateShop(shop.id, formData);
       if (result.error) throw new Error(result.error);
       
-      toast.success("Settings saved successfully!", { id: toastId });
+      toast.success(t.dashboard.settings.settingsSaved, { id: toastId });
       fetchShopData(); // Refetch to get the latest data
     } catch (error: any) {
       console.error("Save error:", error);
-      toast.error(error.message || "Failed to save settings", { id: toastId });
+      toast.error(error.message || t.dashboard.settings.saveFailed, { id: toastId });
     } finally {
       setIsSubmitting(false);
     }
@@ -120,8 +120,8 @@ export default function SettingsPage() {
 
   return (
     <DashboardManagementLayout 
-      title="Settings" 
-      subtitle="Manage your barbershop details and appearance"
+      title={t.dashboard.settings.title} 
+      subtitle={t.dashboard.settings.subtitle}
     >
       <div className="max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm">
         {isLoading ? (
@@ -138,14 +138,14 @@ export default function SettingsPage() {
             {/* Logo Section */}
             <div className="space-y-4">
               <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                Shop Logo
+                {t.dashboard.settings.shopLogo}
               </label>
               <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center group">
                   {formData.logoUrl ? (
                     <img src={formData.logoUrl} alt="Shop Logo" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-2xl font-bold text-slate-300">LOGO</span>
+                    <span className="text-2xl font-bold text-slate-300">{t.dashboard.settings.logoPlaceholder}</span>
                   )}
                   {isSubmitting && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -154,8 +154,8 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <div className="flex-1 space-y-3 text-center sm:text-left">
-                  <h4 className="font-bold text-slate-900 dark:text-slate-50">Upload your branding</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">JPG, PNG or WEBP. Max 2MB.</p>
+                  <h4 className="font-bold text-slate-900 dark:text-slate-50">{t.dashboard.settings.uploadBranding}</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{t.dashboard.settings.logoHint}</p>
                   <Button 
                     type="button"
                     variant="outline"
@@ -163,7 +163,7 @@ export default function SettingsPage() {
                     disabled={isSubmitting}
                     className="rounded-xl font-bold h-10"
                   >
-                    Select Image
+                    {t.dashboard.settings.selectImage}
                   </Button>
                   <input 
                     type="file"
@@ -180,49 +180,49 @@ export default function SettingsPage() {
             <div className="grid gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                  Shop Name
+                  {t.dashboard.settings.shopName}
                 </label>
                 <Input 
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="h-12 rounded-xl"
-                  placeholder="Enter shop name"
+                  placeholder={t.dashboard.settings.shopNamePlaceholder}
                 />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                  Description
+                  {t.dashboard.settings.description}
                 </label>
                 <Input 
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="h-12 rounded-xl"
-                  placeholder="Brief description of your shop"
+                  placeholder={t.dashboard.settings.descriptionPlaceholder}
                 />
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                    Phone Number
+                    {t.dashboard.settings.phoneNumber}
                   </label>
                   <Input 
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="h-12 rounded-xl"
-                    placeholder="+351..."
+                    placeholder={t.dashboard.settings.phonePlaceholder}
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                    Instagram Account
+                    {t.dashboard.settings.instagramAccount}
                   </label>
                   <Input 
                     value={formData.instagram}
                     onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                     className="h-12 rounded-xl"
-                    placeholder="@username"
+                    placeholder={t.dashboard.settings.instagramPlaceholder}
                   />
                 </div>
               </div>
@@ -233,7 +233,7 @@ export default function SettingsPage() {
               disabled={isSubmitting} 
               className="w-full h-12 rounded-xl font-bold text-lg shadow-lg shadow-blue-500/20"
             >
-              Save Settings
+              {t.dashboard.settings.saveSettings}
             </Button>
           </form>
         )}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { onboardingService, sanitizePhone } from "@/services/onboardingService";
@@ -52,6 +52,18 @@ type ServiceForm = {
   duration: string;
 };
 
+// Combined shop form state interface
+interface ShopFormState {
+  name: string;
+  slug: string;
+  logo: File | null;
+  logoPreview: string | null;
+  about: string;
+  address: string;
+  phone: string;
+}
+
+type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
 export default function OnboardingPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -61,19 +73,20 @@ export default function OnboardingPage() {
   const totalSteps = 4;
   const [isLaunching, setIsLaunching] = useState(false);
 
-  // Step 1 — Shop
-  const [shopName, setShopName] = useState("");
-  const [shopSlug, setShopSlug] = useState("");
-  const [shopLogo, setShopLogo] = useState<File | null>(null);
-  const [shopLogoPreview, setShopLogoPreview] = useState<string | null>(null);
+  // Step 1 — Shop (consolidated state)
+  const [shopForm, setShopForm] = useState<ShopFormState>({
+    name: "",
+    slug: "",
+    logo: null,
+    logoPreview: null,
+    about: "",
+    address: "",
+    phone: "",
+  });
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [shopAbout, setShopAbout] = useState("");
-  const [shopAddress, setShopAddress] = useState("");
-  const [shopPhone, setShopPhone] = useState("");
 
   // Slug availability
-  type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
   const slugDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -87,11 +100,19 @@ export default function OnboardingPage() {
     { id: "1", name: "", price: "", duration: "30" },
   ]);
 
+  // Helper to update shop form fields
+  const updateShopForm = useCallback(<K extends keyof ShopFormState>(
+    field: K,
+    value: ShopFormState[K]
+  ) => {
+    setShopForm(prev => ({ ...prev, [field]: value }));
+  }, []);
+
   // Auto-generate slug from shop name
   useEffect(() => {
-    if (shopName && currentStep === 1) {
-      setShopSlug(
-        shopName
+    if (shopForm.name && currentStep === 1) {
+      updateShopForm("slug",
+        shopForm.name
           .toLowerCase()
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
@@ -100,32 +121,32 @@ export default function OnboardingPage() {
           .substring(0, 50)
       );
     }
-  }, [shopName, currentStep]);
+  }, [shopForm.name, currentStep, updateShopForm]);
 
   // Real-time slug availability check (debounced 500ms)
   useEffect(() => {
     if (slugDebounceRef.current) clearTimeout(slugDebounceRef.current);
 
-    if (!shopSlug || shopSlug.length < 3) {
+    if (!shopForm.slug || shopForm.slug.length < 3) {
       setSlugStatus("idle");
       return;
     }
 
-    if (!/^[a-z0-9-]+$/.test(shopSlug)) {
+    if (!/^[a-z0-9-]+$/.test(shopForm.slug)) {
       setSlugStatus("invalid");
       return;
     }
 
     setSlugStatus("checking");
     slugDebounceRef.current = setTimeout(async () => {
-      const { available } = await onboardingService.checkSlug(shopSlug);
+      const { available } = await onboardingService.checkSlug(shopForm.slug);
       setSlugStatus(available ? "available" : "taken");
     }, 500);
 
     return () => {
       if (slugDebounceRef.current) clearTimeout(slugDebounceRef.current);
     };
-  }, [shopSlug]);
+  }, [shopForm.slug]);
 
   // Auth guard
   useEffect(() => {
@@ -158,7 +179,7 @@ export default function OnboardingPage() {
   const updateService = (id: string, field: keyof ServiceForm, value: string) =>
     setServices(services.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
@@ -169,10 +190,13 @@ export default function OnboardingPage() {
         toast.error("Please select an image file");
         return;
       }
-      setShopLogo(file);
-      setShopLogoPreview(URL.createObjectURL(file));
+      setShopForm(prev => ({
+        ...prev,
+        logo: file,
+        logoPreview: URL.createObjectURL(file),
+      }));
     }
-  };
+  }, []);
 
   const handleLaunch = async () => {
     setIsLaunching(true);
@@ -180,10 +204,10 @@ export default function OnboardingPage() {
 
     try {
       // 1. Upload logo if it exists
-      if (shopLogo) {
+      if (shopForm.logo) {
         const toastId = toast.loading("Uploading logo...");
         try {
-          uploadedLogoUrl = await StorageService.uploadImage(shopLogo, 'shops');
+          uploadedLogoUrl = await StorageService.uploadImage(shopForm.logo, 'shops');
           toast.success("Logo uploaded!", { id: toastId });
         } catch (uploadError) {
           toast.error("Failed to upload logo.", { id: toastId });
@@ -200,11 +224,11 @@ export default function OnboardingPage() {
       // 3. Call the completion service
       await onboardingService.complete({
         shop: {
-          name: shopName,
-          slug: shopSlug,
-          description: shopAbout,
-          address: shopAddress,
-          phone: sanitizePhone(shopPhone),
+          name: shopForm.name,
+          slug: shopForm.slug,
+          description: shopForm.about,
+          address: shopForm.address,
+          phone: sanitizePhone(shopForm.phone),
           logoUrl: uploadedLogoUrl,
         },
         barbers: finalBarbers.filter(b => b.name.trim()).map(b => ({
@@ -231,18 +255,30 @@ export default function OnboardingPage() {
     }
   };
 
-  // --- Validation ---
-  const isStep1Valid =
-    shopName.trim().length >= 3 &&
-    shopSlug.trim().length >= 3 &&
-    slugStatus === "available";
-  const isStep2Valid = barbers.some((b) => b.name.trim().length > 0 && b.phone.trim().length > 0);
-  const isStep3Valid = services.some((s) => s.name.trim().length > 0 && s.price.trim().length > 0);
+  // --- Validation (memoized for performance) ---
+  const isStep1Valid = useMemo(() =>
+    shopForm.name.trim().length >= 3 &&
+    shopForm.slug.trim().length >= 3 &&
+    slugStatus === "available",
+    [shopForm.name, shopForm.slug, slugStatus]
+  );
 
-  const canProceed =
+  const isStep2Valid = useMemo(() =>
+    barbers.some((b) => b.name.trim().length > 0 && b.phone.trim().length > 0),
+    [barbers]
+  );
+
+  const isStep3Valid = useMemo(() =>
+    services.some((s) => s.name.trim().length > 0 && s.price.trim().length > 0),
+    [services]
+  );
+
+  const canProceed = useMemo(() =>
     (currentStep === 1 && isStep1Valid) ||
     (currentStep === 2 && isStep2Valid) ||
-    (currentStep === 3 && isStep3Valid);
+    (currentStep === 3 && isStep3Valid),
+    [currentStep, isStep1Valid, isStep2Valid, isStep3Valid]
+  );
 
   const inputClass =
     "w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all";
@@ -323,8 +359,8 @@ export default function OnboardingPage() {
                     onClick={() => fileInputRef.current?.click()}
                     className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-400 dark:text-slate-500 overflow-hidden relative cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                   >
-                    {shopLogoPreview ? (
-                      <img src={shopLogoPreview} alt="Shop Logo Preview" className="w-full h-full object-cover" />
+                    {shopForm.logoPreview ? (
+                      <img src={shopForm.logoPreview} alt="Shop Logo Preview" className="w-full h-full object-cover" />
                     ) : (
                       <PlusIcon className="w-6 h-6" />
                     )}
@@ -346,8 +382,8 @@ export default function OnboardingPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="shopName" className={labelClass}>Barbershop Name *</label>
-                    <input id="shopName" type="text" placeholder="e.g. Classic Cuts" value={shopName}
-                      onChange={(e) => setShopName(e.target.value)} className={inputClass} />
+                    <input id="shopName" type="text" placeholder="e.g. Classic Cuts" value={shopForm.name}
+                      onChange={(e) => updateShopForm("name", e.target.value)} className={inputClass} />
                   </div>
                   <div>
                     <label htmlFor="shopSlug" className={labelClass}>Booking URL *</label>
@@ -361,8 +397,8 @@ export default function OnboardingPage() {
                       <span className="px-4 py-3 bg-slate-50 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 text-sm border-r border-slate-200 dark:border-slate-700 flex items-center select-none whitespace-nowrap">
                         grid.com/
                       </span>
-                      <input id="shopSlug" type="text" placeholder="classic-cuts" value={shopSlug}
-                        onChange={(e) => setShopSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                      <input id="shopSlug" type="text" placeholder="classic-cuts" value={shopForm.slug}
+                        onChange={(e) => updateShopForm("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
                         className="w-full px-4 py-3 focus:outline-none bg-transparent text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500" />
                       <span className="px-3 flex items-center shrink-0">
                         {slugStatus === "checking" && (
@@ -398,20 +434,20 @@ export default function OnboardingPage() {
                 <div>
                   <label htmlFor="shopAbout" className={labelClass}>About / Description</label>
                   <textarea id="shopAbout" rows={3} placeholder="Tell your clients a little bit about your barbershop..."
-                    value={shopAbout} onChange={(e) => setShopAbout(e.target.value)}
+                    value={shopForm.about} onChange={(e) => updateShopForm("about", e.target.value)}
                     className={`${inputClass} resize-none`} />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="shopPhone" className={labelClass}>Phone / WhatsApp</label>
-                    <input id="shopPhone" type="tel" placeholder="+351 912 345 678" value={shopPhone}
-                      onChange={(e) => setShopPhone(e.target.value)} className={inputClass} />
+                    <input id="shopPhone" type="tel" placeholder="+351 912 345 678" value={shopForm.phone}
+                      onChange={(e) => updateShopForm("phone", e.target.value)} className={inputClass} />
                   </div>
                   <div>
                     <label htmlFor="shopAddress" className={labelClass}>Location / Address</label>
-                    <input id="shopAddress" type="text" placeholder="123 Main St, City" value={shopAddress}
-                      onChange={(e) => setShopAddress(e.target.value)} className={inputClass} />
+                    <input id="shopAddress" type="text" placeholder="123 Main St, City" value={shopForm.address}
+                      onChange={(e) => updateShopForm("address", e.target.value)} className={inputClass} />
                   </div>
                 </div>
               </div>
@@ -432,7 +468,7 @@ export default function OnboardingPage() {
                 </span>
               </div>
               <p className="text-slate-500 dark:text-slate-400 mb-8">
-                Who is working at {shopName || "your shop"}?{barbers.length >= 10 ? " Maximum reached." : " Up to 10 barbers."}
+                Who is working at {shopForm.name || "your shop"}?{barbers.length >= 10 ? " Maximum reached." : " Up to 10 barbers."}
               </p>
 
               <div className="space-y-6">
@@ -585,26 +621,26 @@ export default function OnboardingPage() {
               <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/60 rounded-2xl p-6 mb-8 space-y-6">
                 <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-4">
                   <div className="flex items-center gap-4">
-                    {shopLogo && (
+                    {shopForm.logo && (
                       <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg shrink-0 uppercase">
-                        {shopName.charAt(0) || "B"}
+                        {shopForm.name.charAt(0) || "B"}
                       </div>
                     )}
                     <div>
                       <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Shop Name</p>
-                      <p className="text-lg font-bold text-slate-900 dark:text-slate-50">{shopName}</p>
+                      <p className="text-lg font-bold text-slate-900 dark:text-slate-50">{shopForm.name}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Booking URL</p>
-                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">grid.com/{shopSlug}</p>
+                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">grid.com/{shopForm.slug}</p>
                   </div>
                 </div>
 
-                {(shopAddress || shopPhone) && (
+                {(shopForm.address || shopForm.phone) && (
                   <div className="border-b border-slate-200 dark:border-slate-700 pb-4 text-sm text-slate-600 dark:text-slate-300 flex flex-col gap-2">
-                    {shopAddress && <p><span className="font-semibold text-slate-700 dark:text-slate-200">Location:</span> {shopAddress}</p>}
-                    {shopPhone && <p><span className="font-semibold text-slate-700 dark:text-slate-200">Contact:</span> {shopPhone}</p>}
+                    {shopForm.address && <p><span className="font-semibold text-slate-700 dark:text-slate-200">Location:</span> {shopForm.address}</p>}
+                    {shopForm.phone && <p><span className="font-semibold text-slate-700 dark:text-slate-200">Contact:</span> {shopForm.phone}</p>}
                   </div>
                 )}
 

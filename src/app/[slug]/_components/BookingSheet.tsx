@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Drawer,
   DrawerContent,
@@ -128,26 +128,33 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
     fetchAvailability();
   }, [selectedBarber, service.duration]);
 
-  // Validation helper: Check all required fields are non-empty
-  const validateRequiredFields = (): boolean => {
+  // Validation helper: Check all required fields are non-empty (memoized)
+  const validateRequiredFields = useCallback((): boolean => {
     if (!date) return false;
     if (!selectedBarber || selectedBarber.trim() === "") return false;
     if (!selectedTime || selectedTime.trim() === "") return false;
     if (!customerName || customerName.trim() === "") return false;
     if (!customerPhone || customerPhone.trim() === "") return false;
     return true;
-  };
+  }, [date, selectedBarber, selectedTime, customerName, customerPhone]);
 
   // Validation helper: Check if time is within business hours (9:00 AM - 7:30 PM)
-  const validateBusinessHours = (time: string): boolean => {
+  // This is a pure function with no dependencies, moved outside or use useCallback with empty deps
+  const validateBusinessHours = useCallback((time: string): boolean => {
     const [hours, minutes] = time.split(":").map(Number);
     if (hours < 9 || hours >= 19 || (hours === 18 && minutes > 30)) {
       return false;
     }
     return true;
-  };
+  }, []);
 
-  const handleBookingSubmit = async () => {
+  // Memoized check for submit button disabled state
+  const isSubmitDisabled = useMemo(() => 
+    !selectedTime || !customerName || isSubmitting,
+    [selectedTime, customerName, isSubmitting]
+  );
+
+  const handleBookingSubmit = useCallback(async () => {
     // Validation 1: Check all required fields are filled
     if (!validateRequiredFields()) {
       toast.error("Please fill in all required fields");
@@ -275,7 +282,19 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
       clearTimeout(longRunningToastTimeout);
       setIsSubmitting(false);
     }
-  };
+  }, [
+    date,
+    selectedBarber,
+    selectedTime,
+    customerName,
+    customerPhone,
+    selectedCountry,
+    service.id,
+    service.barberShopId,
+    service.duration,
+    validateRequiredFields,
+    validateBusinessHours,
+  ]);
 
   return (
     <Drawer>
@@ -442,9 +461,9 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
             {/* Submit Button */}
             <div className="pt-6">
               <button
-                disabled={!selectedTime || !customerName || isSubmitting}
+                disabled={isSubmitDisabled}
                 className={`w-full rounded-2xl font-bold text-base transition-all flex items-center justify-center h-[56px] ${
-                  !selectedTime || !customerName || isSubmitting
+                  isSubmitDisabled
                     ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
                     : "bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/10 active:scale-[0.98]"
                 }`}
