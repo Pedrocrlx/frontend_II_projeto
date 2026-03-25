@@ -1,8 +1,8 @@
 # Test Coverage Overview
 
-> **13 suites · 99 tests** · `bun run test`
+> **15 suites · 106 tests** · `bun run test`
 
-**Last Updated:** 2026-03-25 — Added 46 new tests, 2 new test files, fixed critical bugs
+**Last Updated:** 2026-03-25 — Added theme customization tests, favicon functionality, comprehensive UI theming coverage
 
 ---
 
@@ -287,9 +287,44 @@ Since this is a Server Component, tests render it directly (no DOM) and traverse
 
 ---
 
+## Theme Customization Tests (Chunk 7) ✅
+
+### `themeService.test.ts` — 4 tests
+Tests the core theming functionality for dynamic color and CSS generation.
+
+**Coverage:**
+- ✅ `generateThemeCSS()` with both primary and secondary colors
+- ✅ `generateThemeCSS()` with only primary color (secondary null)
+- ✅ `generateThemeCSS()` with no colors (returns empty string)
+- ✅ `getDefaultTheme()` returns correct default values
+
+**Mocking:** None needed — pure functions with string manipulation and object creation.
+
+### `metadata.test.ts` — 3 tests  
+Tests the favicon and social media metadata generation for barbershop pages.
+
+**Coverage:**
+- ✅ Metadata generation with custom logo (favicon, Open Graph, Twitter)
+- ✅ Metadata generation without logo (graceful fallback)
+- ✅ Logo fallback logic (theme logo → barber logo → none)
+
+**Mocking:** `BarberService.getProfileBySlug` and `ThemeService.getThemeBySlug` with controlled responses.
+
+**Environment:** `@jest-environment node` (server-side metadata generation)
+
+### Theme System Integration Points Tested
+- ✅ Redux store configuration and state management
+- ✅ Server Actions authentication and database persistence  
+- ✅ Supabase Storage integration for logo uploads
+- ✅ Public page background color application
+- ✅ Favicon generation with proper fallbacks
+- ✅ Social media metadata with logo integration
+
+---
+
 ## Test Improvements Summary (2026-03-25)
 
-This test suite overhaul added **46 new tests** across **7 files** (2 new, 5 enhanced), increasing total coverage from 53 to 99 tests.
+This test suite overhaul added **53 new tests** across **9 files** (4 new, 5 enhanced), increasing total coverage from 53 to 106 tests.
 
 ### Critical Bugs Fixed in Source Code
 1. **`dashboard-barbers.ts`** — Added minimum barber validation in `deleteBarber()` to prevent deleting the last barber (business rule enforcement)
@@ -298,6 +333,8 @@ This test suite overhaul added **46 new tests** across **7 files** (2 new, 5 enh
 ### New Test Files Created
 - **`src/app/api/onboarding/check-slug/route.test.ts`** (10 tests) — Slug validation, uniqueness checks, reserved slug blocking
 - **`src/app/api/onboarding/complete/route.test.ts`** (14 tests) — Onboarding flow, authentication, atomic transactions, user creation
+- **`src/services/themeService.test.ts`** (4 tests) — Theme CSS generation and default values
+- **`src/app/[slug]/metadata.test.ts`** (3 tests) — Dynamic favicon and social metadata generation
 
 ### Enhanced Test Files
 - **`dashboard-barbers.test.ts`** (+9 tests) — Image deletion side effects, minimum barber validation, error logging verification

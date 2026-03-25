@@ -59,11 +59,12 @@ interface BookingSheetProps {
     id: string;
     name: string;
   }[];
+  primaryColor?: string;
 }
 
 const TIME_SLOTS = generateTimeSlots(9, 19, 30);
 
-export function BookingSheet({ service, barbers }: BookingSheetProps) {
+export function BookingSheet({ service, barbers, primaryColor = '#000000' }: BookingSheetProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedBarber, setSelectedBarber] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -299,7 +300,10 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <button className="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-full hover:bg-slate-800 transition-all active:scale-95 whitespace-nowrap shadow-sm">
+        <button 
+          className="px-6 py-2.5 text-white text-sm font-bold rounded-full hover:opacity-80 transition-all active:scale-95 whitespace-nowrap shadow-sm"
+          style={{ backgroundColor: primaryColor }}
+        >
           Book
         </button>
       </DrawerTrigger>
@@ -465,8 +469,9 @@ export function BookingSheet({ service, barbers }: BookingSheetProps) {
                 className={`w-full rounded-2xl font-bold text-base transition-all flex items-center justify-center h-[56px] ${
                   isSubmitDisabled
                     ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
-                    : "bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/10 active:scale-[0.98]"
+                    : "text-white hover:opacity-80 shadow-lg active:scale-[0.98]"
                 }`}
+                style={!isSubmitDisabled ? { backgroundColor: primaryColor } : {}}
                 onClick={handleBookingSubmit}
               >
                 {isSubmitting ? (

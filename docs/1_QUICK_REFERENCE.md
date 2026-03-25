@@ -241,19 +241,35 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 - Auto-charge after trial
 - 7-day grace period on payment failure
 
-## Theme Customization (Optional - Chunk 7)
+## Theme Customization ✅ (Chunk 7 - COMPLETE)
 
 ### Available Options
-- Primary color
-- Secondary color
-- Logo upload
-- Real-time preview
+- **Primary color** - Applied to backgrounds (navbar, hero, about, footer)
+- **Secondary color** - Reserved for future use
+- **Logo upload** - Stored in Supabase "photos" bucket
+- **Real-time preview** - See changes before saving
+- **Dynamic favicon** - Logo automatically used as favicon
 
 ### Implementation
-- Redux Toolkit for state management
-- CSS variables for dynamic theming
-- Persisted in database
-- Applied to public page
+- **State Management:** Redux Toolkit for customization dashboard
+- **Storage:** Supabase Storage (photos bucket, shops/ path)
+- **Database:** Prisma (primaryColor, secondaryColor, logoUrl fields)
+- **Image Processing:** Automatic WebP conversion and compression
+- **Theming:** Inline styles for backgrounds, white text for readability
+
+### Usage
+1. Navigate to `/dashboard/customize`
+2. Choose primary color using color picker
+3. Upload logo (recommended 200x200px, any format)
+4. Preview changes in real-time
+5. Click "Save Changes" to persist
+6. Public page at `/[slug]` updates automatically
+
+### Design Philosophy
+- **Background-only colors:** Custom colors applied ONLY to backgrounds
+- **Fixed text colors:** White on colored backgrounds, slate on light backgrounds
+- **Accessibility first:** Works with any color choice, maintains contrast
+- **Performance:** WebP compression, server-side rendering, proper caching
 
 ## Metrics to Track
 

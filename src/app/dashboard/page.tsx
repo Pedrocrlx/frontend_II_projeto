@@ -28,7 +28,8 @@ export default function DashboardPage() {
     { title: t.dashboard.cards.services.title, description: t.dashboard.cards.services.description, icon: "purple", href: "/dashboard/services", isComingSoon: false },
     { title: t.dashboard.cards.bookings.title, description: t.dashboard.cards.bookings.description, icon: "orange", href: "/dashboard/bookings", isComingSoon: false },
     { title: t.dashboard.cards.settings.title, description: t.dashboard.cards.settings.description, icon: "indigo", href: "/dashboard/settings", isComingSoon: false },
-    { title: t.dashboard.cards.billing.title, description: t.dashboard.cards.billing.description, icon: "pink", href: "/dashboard/billing", isComingSoon: true },
+    { title: "Theme Customization", description: "Customize colors and logo for your barbershop page", icon: "pink", href: "/dashboard/customize", isComingSoon: false },
+    { title: t.dashboard.cards.billing.title, description: t.dashboard.cards.billing.description, icon: "orange", href: "/dashboard/billing", isComingSoon: true },
   ];
 
   useEffect(() => {

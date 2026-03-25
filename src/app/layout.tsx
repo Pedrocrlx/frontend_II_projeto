@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { I18nProvider } from "@/contexts/I18nContext";
+import { ReduxProvider } from "@/contexts/ReduxProvider";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -14,7 +15,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "Grid | Your schedule, organized.",
-  description: "Grid helps barbershops manage bookings with precision. Create your professional booking page in minutes and stop the scheduling chaos.",
+  description:
+    "Grid helps barbershops manage bookings with precision. Create your professional booking page in minutes and stop the scheduling chaos.",
   icons: {
     icon: { url: "/favicon.webp", type: "image/webp" },
   },
@@ -27,13 +29,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
-      <body className={`${plusJakartaSans.variable} font-sans antialiased overflow-x-hidden`}>
+      <head>
+        <script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="a37a797a-91c4-4bcd-a887-ccf311f2a15d"
+        ></script>
+      </head>
+      <body
+        className={`${plusJakartaSans.variable} font-sans antialiased overflow-x-hidden`}
+      >
         <ThemeProvider>
-          <AuthProvider>
-            <I18nProvider>
-              {children}
-            </I18nProvider>
-          </AuthProvider>
+          <ReduxProvider>
+            <AuthProvider>
+              <I18nProvider>{children}</I18nProvider>
+            </AuthProvider>
+          </ReduxProvider>
         </ThemeProvider>
         <Toaster richColors />
       </body>
