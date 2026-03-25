@@ -1,0 +1,38 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "filedouments": {
+      "type": "local",
+      "command": [
+        "bunx",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ],
+      "environment": {},
+      "enabled": true,
+      "timeout": 5000
+    }
+  },
+  "agent": {
+    "review": {
+      "description": "Reviews code for best practices and potential issues",
+      "model": "github-copilot/claude-sonnet-4.5"
+    },
+    "architect": {
+      "description": "Designs software architecture and provides high-level guidance",
+      "model": "github-copilot/claude-opus-4.5"
+    },
+    "ui-engineer": {
+      "description": "Expert in Next.js UI/UX, improves design matching existing patterns",
+      "model": "github-copilot/claude-sonnet-4.5"
+    },
+    "qa": {
+      "description": "Quality Assurance expert. Validates testing strategy, writes and reviews tests.",
+      "model": "github-copilot/claude-sonnet-4.5"
+    },
+    "software-engineer": {
+      "description": "Expert in Next.js backend, Server Actions, API routes, and core business logic",
+      "model": "github-copilot/claude-sonnet-4.5"
+    }
+  }
+}
