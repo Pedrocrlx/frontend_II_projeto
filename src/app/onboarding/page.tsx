@@ -155,30 +155,6 @@ export default function OnboardingPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Show loading state to prevent hydration mismatch
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <GridIcon />
-          <p className="mt-4 text-sm font-medium text-slate-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't render anything if not authenticated (will redirect)
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <GridIcon />
-          <p className="mt-4 text-sm font-medium text-slate-600">Redirecting...</p>
-        </div>
-      </div>
-    );
-  }
-
   // --- Handlers ---
   const handleNext = () => setCurrentStep((p) => Math.min(p + 1, totalSteps));
   const handleBack = () => setCurrentStep((p) => Math.max(p - 1, 1));
@@ -302,6 +278,29 @@ export default function OnboardingPage() {
     [currentStep, isStep1Valid, isStep2Valid, isStep3Valid]
   );
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <GridIcon />
+          <p className="mt-4 text-sm font-medium text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <GridIcon />
+          <p className="mt-4 text-sm font-medium text-slate-600">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
+
   const inputClass =
     "w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all";
   const labelClass = "block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2";
@@ -341,13 +340,12 @@ export default function OnboardingPage() {
             {[1, 2, 3, 4].map((step) => (
               <div
                 key={step}
-                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors duration-300 ${
-                  step < currentStep
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors duration-300 ${step < currentStep
                     ? "bg-blue-600 border-blue-600 text-white"
                     : step === currentStep
-                    ? "bg-white dark:bg-slate-900 border-blue-600 text-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
-                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500"
-                }`}
+                      ? "bg-white dark:bg-slate-900 border-blue-600 text-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500"
+                  }`}
               >
                 {step < currentStep ? <CheckIcon className="w-4 h-4 sm:w-5 sm:h-5" /> : step}
               </div>
@@ -377,7 +375,7 @@ export default function OnboardingPage() {
               <div className="space-y-6">
                 {/* Logo */}
                 <div className="flex items-center gap-4">
-                  <div 
+                  <div
                     onClick={() => fileInputRef.current?.click()}
                     className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-400 dark:text-slate-500 overflow-hidden relative cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                   >
@@ -409,13 +407,12 @@ export default function OnboardingPage() {
                   </div>
                   <div>
                     <label htmlFor="shopSlug" className={labelClass}>Booking URL *</label>
-                    <div className={`flex rounded-xl overflow-hidden border transition-all bg-white dark:bg-slate-800 focus-within:ring-2 ${
-                      slugStatus === "available"
+                    <div className={`flex rounded-xl overflow-hidden border transition-all bg-white dark:bg-slate-800 focus-within:ring-2 ${slugStatus === "available"
                         ? "border-emerald-500 focus-within:ring-emerald-500/30"
                         : slugStatus === "taken" || slugStatus === "invalid"
-                        ? "border-red-400 focus-within:ring-red-400/30"
-                        : "border-slate-200 dark:border-slate-700 focus-within:ring-blue-600/50 focus-within:border-blue-600"
-                    }`}>
+                          ? "border-red-400 focus-within:ring-red-400/30"
+                          : "border-slate-200 dark:border-slate-700 focus-within:ring-blue-600/50 focus-within:border-blue-600"
+                      }`}>
                       <span className="px-4 py-3 bg-slate-50 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 text-sm border-r border-slate-200 dark:border-slate-700 flex items-center select-none whitespace-nowrap">
                         grid.com/
                       </span>
@@ -425,8 +422,8 @@ export default function OnboardingPage() {
                       <span className="px-3 flex items-center shrink-0">
                         {slugStatus === "checking" && (
                           <svg className="w-4 h-4 animate-spin text-slate-400" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                           </svg>
                         )}
                         {slugStatus === "available" && (
@@ -436,7 +433,7 @@ export default function OnboardingPage() {
                         )}
                         {(slugStatus === "taken" || slugStatus === "invalid") && (
                           <svg className="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                           </svg>
                         )}
                       </span>
@@ -481,11 +478,10 @@ export default function OnboardingPage() {
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-start justify-between mb-2">
                 <h2 className="text-3xl font-extrabold text-slate-900 dark:text-slate-50">Add your Team</h2>
-                <span className={`text-sm font-bold px-3 py-1 rounded-full mt-1 ${
-                  barbers.length >= 10
+                <span className={`text-sm font-bold px-3 py-1 rounded-full mt-1 ${barbers.length >= 10
                     ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
                     : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                }`}>
+                  }`}>
                   {barbers.length}/10
                 </span>
               </div>
@@ -554,11 +550,10 @@ export default function OnboardingPage() {
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-start justify-between mb-2">
                 <h2 className="text-3xl font-extrabold text-slate-900 dark:text-slate-50">Add your Services</h2>
-                <span className={`text-sm font-bold px-3 py-1 rounded-full mt-1 ${
-                  services.length >= 20
+                <span className={`text-sm font-bold px-3 py-1 rounded-full mt-1 ${services.length >= 20
                     ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
                     : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                }`}>
+                  }`}>
                   {services.length}/20
                 </span>
               </div>
@@ -697,11 +692,10 @@ export default function OnboardingPage() {
 
             {currentStep < 4 ? (
               <button onClick={handleNext} disabled={!canProceed}
-                className={`px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg ${
-                  canProceed
+                className={`px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg ${canProceed
                     ? "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20 hover:shadow-blue-500/40 active:scale-95"
                     : "bg-slate-100 text-slate-400 shadow-none cursor-not-allowed"
-                }`}>
+                  }`}>
                 Continue
               </button>
             ) : (
