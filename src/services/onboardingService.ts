@@ -19,6 +19,7 @@ export interface OnboardingBarber {
   specialty?: string;
   phone: string;
   instagram?: string;
+  imageUrl?: string;
 }
 
 export interface OnboardingServiceItem {

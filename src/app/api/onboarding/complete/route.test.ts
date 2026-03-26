@@ -9,6 +9,7 @@ jest.mock("@/lib/prisma", () => ({
     user: {
       findUnique: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
     barberShop: {
       findUnique: jest.fn(),
@@ -340,6 +341,52 @@ describe("POST /api/onboarding/complete", () => {
     expect(body.barberShopId).toBe("new-shop-1");
     expect(body.slug).toBe("test-barbershop");
     expect(mockPrisma.user.create).not.toHaveBeenCalled(); // Should not create new user
+  });
+
+  it("should link existing user by email when supabaseId is missing", async () => {
+    const mockAuthClient = {
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: { id: "supabase-user-new", email: "legacy@example.com" } },
+          error: null,
+        }),
+      },
+    };
+
+    mockSupabase.mockReturnValue(mockAuthClient as any);
+    
+    // First call (by supabaseId) returns null, second call (by email) finds existing user
+    mockPrisma.user.findUnique
+      .mockResolvedValueOnce(null) // Not found by supabaseId
+      .mockResolvedValueOnce({     // Found by email
+        id: "legacy-user-1",
+        email: "legacy@example.com",
+        supabaseId: null,
+      } as any);
+    
+    mockPrisma.user.update.mockResolvedValue({
+      id: "legacy-user-1",
+      email: "legacy@example.com",
+      supabaseId: "supabase-user-new",
+    } as any);
+    
+    mockPrisma.barberShop.findUnique.mockResolvedValue(null); // Slug available
+    mockPrisma.$transaction.mockResolvedValue({
+      id: "new-shop-1",
+      slug: "test-barbershop",
+    } as any);
+
+    const request = makeRequest(validPayload, "valid-token");
+    const response = await POST(request);
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body.barberShopId).toBe("new-shop-1");
+    expect(mockPrisma.user.update).toHaveBeenCalledWith({
+      where: { email: "legacy@example.com" },
+      data: { supabaseId: "supabase-user-new" },
+    });
+    expect(mockPrisma.user.create).not.toHaveBeenCalled(); // Should not create, just update
   });
 
   it("should create barbers and services in atomic transaction", async () => {

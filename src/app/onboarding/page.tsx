@@ -40,7 +40,7 @@ type Barber = {
   id: string;
   name: string;
   specialty?: string;
-  photo?: string;
+  imageUrl?: string;
   phone: string;
   instagram?: string;
 };
@@ -84,6 +84,7 @@ export default function OnboardingPage() {
     phone: "",
   });
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadingBarberId, setUploadingBarberId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Slug availability
@@ -92,7 +93,7 @@ export default function OnboardingPage() {
 
   // Step 2 — Barbers
   const [barbers, setBarbers] = useState<Barber[]>([
-    { id: "1", name: "", specialty: "", phone: "", instagram: "" },
+    { id: "1", name: "", specialty: "", imageUrl: "", phone: "", instagram: "" },
   ]);
 
   // Step 3 — Services
@@ -161,7 +162,7 @@ export default function OnboardingPage() {
 
   const addBarber = () => {
     if (barbers.length < 10) {
-      setBarbers([...barbers, { id: Date.now().toString(), name: "", specialty: "", phone: "", instagram: "" }]);
+      setBarbers([...barbers, { id: Date.now().toString(), name: "", specialty: "", imageUrl: "", phone: "", instagram: "" }]);
     }
   };
   const removeBarber = (id: string) => setBarbers(barbers.filter((b) => b.id !== id));
@@ -195,6 +196,34 @@ export default function OnboardingPage() {
       }));
     }
   }, []);
+
+  const handleBarberPhotoChange = useCallback(async (barberId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Photo size must be less than 2MB");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    setUploadingBarberId(barberId);
+    const toastId = toast.loading("Uploading photo...");
+
+    try {
+      const uploadedUrl = await StorageService.uploadImage(file, 'barbers');
+      setBarbers(barbers.map((b) => (b.id === barberId ? { ...b, imageUrl: uploadedUrl } : b)));
+      toast.success("Photo uploaded!", { id: toastId });
+    } catch (uploadError) {
+      console.error("Photo upload error:", uploadError);
+      toast.error("Failed to upload photo.", { id: toastId });
+    } finally {
+      setUploadingBarberId(null);
+    }
+  }, [barbers]);
 
   const handleLaunch = async () => {
     setIsLaunching(true);
@@ -233,7 +262,8 @@ export default function OnboardingPage() {
           name: b.name,
           specialty: b.specialty,
           phone: b.phone,
-          instagram: b.instagram
+          instagram: b.instagram,
+          imageUrl: b.imageUrl,
         })),
         services: services.filter(s => s.name.trim() && s.price).map(s => ({
           name: s.name,
@@ -495,8 +525,24 @@ export default function OnboardingPage() {
                     <div className="flex items-center gap-4">
                       {/* Photo upload */}
                       <div className="w-14 h-14 shrink-0 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-400 dark:text-slate-500 relative overflow-hidden cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-600/50">
-                        <PlusIcon className="w-5 h-5" />
-                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" title="Upload Photo" accept="image/*" />
+                        {barber.imageUrl ? (
+                          <img src={barber.imageUrl} alt={barber.name || "Barber"} className="w-full h-full object-cover" />
+                        ) : uploadingBarberId === barber.id ? (
+                          <svg className="w-5 h-5 animate-spin text-blue-600" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                          </svg>
+                        ) : (
+                          <PlusIcon className="w-5 h-5" />
+                        )}
+                        <input 
+                          type="file" 
+                          className="absolute inset-0 opacity-0 cursor-pointer" 
+                          title="Upload Photo" 
+                          accept="image/*"
+                          onChange={(e) => handleBarberPhotoChange(barber.id, e)}
+                          disabled={uploadingBarberId === barber.id}
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <input type="text" placeholder={`Barber ${index + 1} Name *`} value={barber.name}

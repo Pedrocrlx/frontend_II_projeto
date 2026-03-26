@@ -7,6 +7,7 @@ interface BarberInput {
   specialty?: string;
   phone: string;
   instagram?: string;
+  imageUrl?: string;
 }
 
 interface ServiceInput {
@@ -22,6 +23,7 @@ interface OnboardingPayload {
     description?: string;
     phone?: string;
     address?: string;
+    logoUrl?: string;
   };
   barbers: BarberInput[];
   services: ServiceInput[];
@@ -81,19 +83,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "At least one service with name and price is required" }, { status: 400 });
     }
 
-    // --- Resolve internal User from supabaseId, create if first login ---
+    // --- Resolve internal User from supabaseId, create/update if needed ---
+    // First, try to find by supabaseId
     let dbUser = await prisma.user.findUnique({
       where: { supabaseId: supabaseUser.id },
     });
 
+    // If not found by supabaseId, check if user exists by email (might be from old flow)
     if (!dbUser) {
-      console.log(`First login for ${supabaseUser.email} — creating User record`);
-      dbUser = await prisma.user.create({
-        data: {
-          supabaseId: supabaseUser.id,
-          email: supabaseUser.email!,
-        },
+      const existingUserByEmail = await prisma.user.findUnique({
+        where: { email: supabaseUser.email! },
       });
+
+      if (existingUserByEmail) {
+        // User exists with this email but no supabaseId - update it
+        console.log(`Linking existing user ${supabaseUser.email} to Supabase ID`);
+        dbUser = await prisma.user.update({
+          where: { email: supabaseUser.email! },
+          data: { supabaseId: supabaseUser.id },
+        });
+      } else {
+        // Brand new user - create it
+        console.log(`First login for ${supabaseUser.email} — creating User record`);
+        dbUser = await prisma.user.create({
+          data: {
+            supabaseId: supabaseUser.id,
+            email: supabaseUser.email!,
+          },
+        });
+      }
     }
 
     // --- Check slug uniqueness ---
@@ -112,6 +130,7 @@ export async function POST(req: NextRequest) {
           description: shop.description?.trim() || null,
           phone: shop.phone?.trim() || null,
           address: shop.address?.trim() || null,
+          logoUrl: shop.logoUrl?.trim() || null,
           isActive: true,
         },
       });
@@ -125,6 +144,7 @@ export async function POST(req: NextRequest) {
           description: b.specialty?.trim() || null,
           phone: b.phone.trim(),
           instagram: b.instagram?.trim() || null,
+          imageUrl: b.imageUrl?.trim() || null,
         })),
       });
 
