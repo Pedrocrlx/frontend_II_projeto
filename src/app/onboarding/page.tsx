@@ -155,7 +155,29 @@ export default function OnboardingPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  if (isLoading || !isAuthenticated) return null;
+  // Show loading state to prevent hydration mismatch
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <GridIcon />
+          <p className="mt-4 text-sm font-medium text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <GridIcon />
+          <p className="mt-4 text-sm font-medium text-slate-600">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
 
   // --- Handlers ---
   const handleNext = () => setCurrentStep((p) => Math.min(p + 1, totalSteps));

@@ -38,20 +38,29 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Show loading state to prevent hydration mismatch
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center px-4">
         <div className="text-center">
           <GridIcon />
-          <p className="text-sm font-bold text-slate-900 tracking-widest uppercase">{t.dashboard.loadingTitle}</p>
-          <p className="mt-2 text-sm text-slate-500">{t.dashboard.loadingSubtitle}</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-50 tracking-widest uppercase">{t.dashboard.loadingTitle}</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t.dashboard.loadingSubtitle}</p>
         </div>
       </div>
     );
   }
 
+  // Don't render if not authenticated (will redirect)
   if (!isAuthenticated) {
-    return null;
+    return (
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center px-4">
+        <div className="text-center">
+          <GridIcon />
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-50 tracking-widest uppercase">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
   const handleSignOut = async () => {
