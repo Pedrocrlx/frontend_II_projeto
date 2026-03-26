@@ -164,9 +164,13 @@ describe("getBarberAvailableDates", () => {
     const fullDayBookings = [];
     for (let hour = 9; hour < 19; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
+        const startTime = new Date(`2024-02-02T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`);
+        const endTime = new Date(startTime);
+        endTime.setMinutes(endTime.getMinutes() + 30);
+        
         fullDayBookings.push({
-          startTime: new Date(`2024-02-02T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`),
-          endTime: new Date(`2024-02-02T${hour.toString().padStart(2, '0')}:${(minute + 30).toString().padStart(2, '0')}:00`),
+          startTime,
+          endTime,
         });
       }
     }
@@ -185,6 +189,13 @@ describe("getBarberAvailableDates", () => {
     // Feb 2 should not be in available dates (fully booked)
     // Feb 1 and Feb 3 should be available
     expect(result.availableDates.length).toBeLessThan(3);
+    
+    // Verify Feb 2 is not in the available dates
+    const hasFeb2 = result.availableDates.some(date => {
+      const d = new Date(date);
+      return d.getFullYear() === 2024 && d.getMonth() === 1 && d.getDate() === 2;
+    });
+    expect(hasFeb2).toBe(false);
   });
 
   it("should return dates with partial availability", async () => {

@@ -17,6 +17,7 @@ function getAuthRedirectUrl(path: string) {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Initialize auth state on mount
   useEffect(() => {
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Failed to initialize auth:", error);
       } finally {
         setIsLoading(false);
+        setIsHydrated(true);
       }
     };
 
@@ -43,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user as AuthUser | null);
+      setIsLoading(false);
     });
 
     return () => {

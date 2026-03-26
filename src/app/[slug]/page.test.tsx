@@ -92,7 +92,7 @@ describe("generateMetadata", () => {
 
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: "test-barber-shop" }) });
 
-    expect(metadata.title).toBe("Test Barber Shop");
+    expect(metadata.title).toBe("Test Barber Shop - Book Your Appointment");
     expect(metadata.description).toBe("A great shop");
   });
 
@@ -109,7 +109,7 @@ describe("generateMetadata", () => {
 
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: "test-barber-shop" }) });
 
-    expect(metadata.description).toBe("Book your appointment at Test Barber Shop");
+    expect(metadata.description).toBe("Book your appointment at Test Barber Shop. Professional barbershop services with online booking.");
   });
 
   it("should return empty metadata for favicon.ico", async () => {
