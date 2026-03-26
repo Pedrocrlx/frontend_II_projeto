@@ -26,6 +26,7 @@ interface I18nContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: Translations;
+  isHydrated: boolean;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -37,12 +38,12 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   // Load locale from localStorage only after hydration
   useEffect(() => {
+    setIsHydrated(true);
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
       if (stored && stored in LOCALES) {
         setLocaleState(stored);
       }
-      setIsHydrated(true);
     }
   }, []);
 
@@ -54,7 +55,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <I18nContext.Provider value={{ locale, setLocale, t: LOCALES[locale] }}>
+    <I18nContext.Provider value={{ locale, setLocale, t: LOCALES[locale], isHydrated }}>
       {children}
     </I18nContext.Provider>
   );
