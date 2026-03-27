@@ -57,7 +57,7 @@ export function DashboardManagementLayout({
   children, 
   title, 
   subtitle, 
-  category = "Management" 
+  category = "" 
 }: DashboardLayoutProps) {
   const { user, isLoading, isAuthenticated, signOut } = useAuth();
   const { t } = useI18n();
@@ -86,7 +86,7 @@ export function DashboardManagementLayout({
       <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center px-4">
         <div className="text-center">
           <GridIcon />
-          <p className="text-sm font-bold text-slate-900 dark:text-slate-50 tracking-widest uppercase">{t.dashboard.loadingTitle || "Loading..."}</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-50 tracking-widest uppercase">{t.dashboard.loadingTitle}</p>
         </div>
       </div>
     );
@@ -97,7 +97,7 @@ export function DashboardManagementLayout({
       <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center px-4">
         <div className="text-center">
           <GridIcon />
-          <p className="text-sm font-bold text-slate-900 dark:text-slate-50 tracking-widest uppercase">Redirecting...</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-50 tracking-widest uppercase">{t.dashboard.redirecting}</p>
         </div>
       </div>
     );
@@ -146,7 +146,7 @@ export function DashboardManagementLayout({
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="sm:hidden p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-label={isMobileMenuOpen ? t.dashboard.closeMenu : t.dashboard.openMenu}
             >
               {isMobileMenuOpen ? (
                 <CloseIcon className="w-6 h-6" />
@@ -196,9 +196,9 @@ export function DashboardManagementLayout({
             className="inline-flex items-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mb-4 sm:mb-6 transition-colors"
           >
             <span aria-hidden="true" className="mr-2">←</span>
-            {t.dashboard.backToDashboard || "Back to Dashboard"}
+            {t.dashboard.backToDashboard}
           </Link>
-          <p className="text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mb-2 sm:mb-3">{category}</p>
+          <p className="text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mb-2 sm:mb-3">{category || t.dashboard.managementCategory}</p>
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight mb-3 sm:mb-4">{title}</h1>
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl">{subtitle}</p>
         </div>

@@ -268,66 +268,68 @@ export default function ServicesPage() {
             </DrawerDescription>
           </DrawerHeader>
 
-          <form onSubmit={handleSubmit} className="p-6 pt-0 space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.serviceName}</label>
-              <Input 
-                placeholder={t.dashboard.services.serviceNamePlaceholder} 
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                className="h-11 rounded-xl"
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+            <div className="space-y-5 overflow-y-auto px-6 pt-0 pb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.serviceName}</label>
+                <Input 
+                  placeholder={t.dashboard.services.serviceNamePlaceholder} 
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  className="h-11 rounded-xl"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.description}</label>
-              <Input 
-                placeholder={t.dashboard.services.descriptionPlaceholder} 
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="h-11 rounded-xl"
-              />
-            </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.description}</label>
+                <Input 
+                  placeholder={t.dashboard.services.descriptionPlaceholder} 
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="h-11 rounded-xl"
+                />
+              </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 relative">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.price}</label>
-                <div className="relative">
-                  <select 
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                    className={selectBaseClass}
-                  >
-                    {PRICE_OPTIONS.map((p) => (
-                      <option key={p} value={p}>${p}.00</option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2 relative">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.price}</label>
+                  <div className="relative">
+                    <select 
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                      className={selectBaseClass}
+                    >
+                      {PRICE_OPTIONS.map((p) => (
+                        <option key={p} value={p}>${p}.00</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2 relative">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.duration}</label>
+                  <div className="relative">
+                    <select 
+                      value={formData.duration}
+                      onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
+                      className={selectBaseClass}
+                    >
+                      {DURATION_OPTIONS.map((d) => (
+                        <option key={d} value={d}>{d} {t.dashboard.services.durationMin}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="space-y-2 relative">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.dashboard.services.duration}</label>
-                <div className="relative">
-                  <select 
-                    value={formData.duration}
-                    onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                    className={selectBaseClass}
-                  >
-                    {DURATION_OPTIONS.map((d) => (
-                      <option key={d} value={d}>{d} {t.dashboard.services.durationMin}</option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
-                  </div>
-                </div>
-              </div>
             </div>
 
-            <DrawerFooter className="px-0 pt-6">
+            <DrawerFooter className="px-6 pt-4 pb-6">
               <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 rounded-xl text-base shadow-lg shadow-blue-500/20">
                 {isSubmitting ? t.dashboard.services.processing : editingId ? t.dashboard.services.saveChanges : t.dashboard.services.createService}
               </Button>

@@ -18,13 +18,15 @@ import {
 } from '@/lib/themeSlice';
 import { saveThemeCustomization, loadThemeCustomization, resetThemeCustomization } from '@/app/_actions/dashboard-theme';
 import { toast } from 'sonner';
-import { RefreshCw, Save, Eye } from 'lucide-react';
+import { RefreshCw, Save } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { StorageService } from '@/services/storageService';
 import { DashboardManagementLayout } from '@/app/dashboard/_components/DashboardManagementLayout';
+import { useI18n } from '@/contexts/I18nContext';
 
 export default function CustomizePage() {
   const dispatch = useAppDispatch();
+  const { t } = useI18n();
   const theme = useAppSelector((state: RootState) => state.theme);
   
   const [isLoading, setIsLoading] = useState(false);
@@ -67,7 +69,7 @@ export default function CustomizePage() {
         }
       } catch (error) {
         console.error('Failed to load theme:', error);
-        toast.error('Failed to load theme configuration');
+        toast.error(t.dashboard.customize.errorLoadTheme);
       } finally {
         setIsLoading(false);
       }
@@ -92,7 +94,7 @@ export default function CustomizePage() {
   // Save theme changes
   const handleSave = async () => {
     if (!authToken) {
-      toast.error('Authentication required');
+      toast.error(t.dashboard.customize.errorAuthRequired);
       return;
     }
 
@@ -108,7 +110,7 @@ export default function CustomizePage() {
           dispatch(setLogoUrl(finalLogoUrl));
         } catch (error) {
           console.error('Failed to upload logo:', error);
-          toast.error('Failed to upload logo');
+          toast.error(t.dashboard.customize.errorUploadLogo);
           setIsSaving(false);
           return;
         }
@@ -131,7 +133,7 @@ export default function CustomizePage() {
 
       if (result.status === 200) {
         dispatch(markAsSaved());
-        toast.success('Theme saved successfully!');
+        toast.success(t.dashboard.customize.successThemeSaved);
         setLogoFile(null);
         setLogoPreview(null);
         
@@ -142,7 +144,7 @@ export default function CustomizePage() {
       }
     } catch (error) {
       console.error('Failed to save theme:', error);
-      toast.error('Failed to save theme');
+      toast.error(t.dashboard.customize.errorSaveTheme);
     } finally {
       setIsSaving(false);
     }
@@ -151,7 +153,7 @@ export default function CustomizePage() {
   // Reset theme
   const handleReset = async () => {
     if (!authToken) {
-      toast.error('Authentication required');
+      toast.error(t.dashboard.customize.errorAuthRequired);
       return;
     }
 
@@ -162,13 +164,13 @@ export default function CustomizePage() {
         dispatch(resetTheme());
         setLogoFile(null);
         setLogoPreview(null);
-        toast.success('Theme reset to defaults');
+        toast.success(t.dashboard.customize.successThemeReset);
       } else {
         toast.error(result.message);
       }
     } catch (error) {
       console.error('Failed to reset theme:', error);
-      toast.error('Failed to reset theme');
+      toast.error(t.dashboard.customize.errorResetTheme);
     } finally {
       setIsLoading(false);
     }
@@ -177,14 +179,14 @@ export default function CustomizePage() {
   if (isLoading && !theme.colors.primaryColor) {
     return (
       <DashboardManagementLayout
-        title="Theme Customization"
-        subtitle="Customize the appearance of your barbershop's public page"
-        category="Customization"
+        title={t.dashboard.customize.title}
+        subtitle={t.dashboard.customize.subtitle}
+        category={t.dashboard.customize.category}
       >
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center space-x-2">
             <RefreshCw className="h-6 w-6 animate-spin" />
-            <span>Loading theme...</span>
+            <span>{t.dashboard.customize.loadingTheme}</span>
           </div>
         </div>
       </DashboardManagementLayout>
@@ -193,20 +195,20 @@ export default function CustomizePage() {
 
   return (
     <DashboardManagementLayout
-      title="Theme Customization"
-      subtitle="Customize the appearance of your barbershop's public page"
-      category="Customization"
+      title={t.dashboard.customize.title}
+      subtitle={t.dashboard.customize.subtitle}
+      category={t.dashboard.customize.category}
     >
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             <Button onClick={handleSave} disabled={isSaving} variant={theme.hasUnsavedChanges ? "default" : "outline"}>
               <Save className="h-4 w-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
+              {isSaving ? t.dashboard.customize.saving : t.dashboard.customize.saveChanges}
             </Button>
             {theme.hasUnsavedChanges && (
               <span className="text-sm text-amber-600 flex items-center">
-                Unsaved changes
+                {t.dashboard.customize.unsavedChanges}
               </span>
             )}
           </div>
@@ -216,15 +218,15 @@ export default function CustomizePage() {
           {/* Color Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Colors</CardTitle>
+              <CardTitle>{t.dashboard.customize.colorsTitle}</CardTitle>
               <CardDescription>
-                Choose colors that will be applied to page backgrounds and interactive elements. Text colors remain standard for accessibility.
+                {t.dashboard.customize.colorsDescription}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Primary Color */}
               <div className="space-y-2">
-                <Label htmlFor="primary-color">Primary Color</Label>
+                <Label htmlFor="primary-color">{t.dashboard.customize.primaryColor}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="primary-color"
@@ -240,7 +242,7 @@ export default function CustomizePage() {
                     style={{ backgroundColor: theme.colors.primaryColor }}
                     className="w-10 h-10 border"
                   >
-                    <span className="sr-only">Pick color</span>
+                    <span className="sr-only">{t.dashboard.customize.pickColor}</span>
                   </Button>
                 </div>
                 {showPrimaryPicker && (
@@ -255,7 +257,7 @@ export default function CustomizePage() {
 
               {/* Secondary Color */}
               <div className="space-y-2">
-                <Label htmlFor="secondary-color">Secondary Color</Label>
+                <Label htmlFor="secondary-color">{t.dashboard.customize.secondaryColor}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="secondary-color"
@@ -271,7 +273,7 @@ export default function CustomizePage() {
                     style={{ backgroundColor: theme.colors.secondaryColor }}
                     className="w-10 h-10 border"
                   >
-                    <span className="sr-only">Pick color</span>
+                    <span className="sr-only">{t.dashboard.customize.pickColor}</span>
                   </Button>
                 </div>
                 {showSecondaryPicker && (
@@ -286,7 +288,7 @@ export default function CustomizePage() {
 
               <Button variant="outline" onClick={handleReset} disabled={isLoading}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Reset to Default
+                {t.dashboard.customize.resetToDefault}
               </Button>
             </CardContent>
           </Card>
@@ -294,20 +296,20 @@ export default function CustomizePage() {
           {/* Logo Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Logo</CardTitle>
+              <CardTitle>{t.dashboard.customize.logoTitle}</CardTitle>
               <CardDescription>
-                Upload your barbershop logo (recommended size: 200x200px)
+                {t.dashboard.customize.logoDescription}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Current Logo */}
               {theme.logoUrl && !logoPreview && (
                 <div className="space-y-2">
-                  <Label>Current Logo</Label>
+                  <Label>{t.dashboard.customize.currentLogo}</Label>
                   <div className="w-32 h-32 border rounded-lg overflow-hidden">
                     <img
                       src={theme.logoUrl}
-                      alt="Current logo"
+                      alt={t.dashboard.customize.currentLogoAlt}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -317,11 +319,11 @@ export default function CustomizePage() {
               {/* Logo Preview */}
               {logoPreview && (
                 <div className="space-y-2">
-                  <Label>New Logo Preview</Label>
+                  <Label>{t.dashboard.customize.newLogoPreview}</Label>
                   <div className="w-32 h-32 border rounded-lg overflow-hidden">
                     <img
                       src={logoPreview}
-                      alt="Logo preview"
+                      alt={t.dashboard.customize.logoPreviewAlt}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -330,7 +332,7 @@ export default function CustomizePage() {
 
               {/* Upload Input */}
               <div className="space-y-2">
-                <Label htmlFor="logo-upload">Upload New Logo</Label>
+                <Label htmlFor="logo-upload">{t.dashboard.customize.uploadNewLogo}</Label>
                 <Input
                   id="logo-upload"
                   type="file"
@@ -338,64 +340,6 @@ export default function CustomizePage() {
                   onChange={handleLogoChange}
                   className="cursor-pointer"
                 />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Live Preview */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="h-5 w-5" />
-                Live Preview
-              </CardTitle>
-              <CardDescription>
-                See how your changes will look on the public page
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div 
-                className="p-6 rounded-lg border-2 border-dashed"
-                style={{
-                  background: `linear-gradient(135deg, ${theme.colors.primaryColor}08, ${theme.colors.primaryColor}03)`,
-                } as React.CSSProperties}
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  {(logoPreview || theme.logoUrl) && (
-                    <div
-                      className="w-12 h-12 rounded object-cover flex items-center justify-center text-white font-bold"
-                      style={{ backgroundColor: theme.colors.primaryColor }}
-                    >
-                      <img
-                        src={logoPreview || theme.logoUrl}
-                        alt="Logo"
-                        className="w-full h-full object-cover rounded"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-900">
-                      Your Barbershop Name
-                    </h3>
-                    <p className="text-sm text-slate-600">
-                      Professional barbershop services
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Button 
-                    size="sm"
-                    style={{ 
-                      backgroundColor: theme.colors.primaryColor,
-                      color: 'white'
-                    }}
-                  >
-                    Book Appointment
-                  </Button>
-                  <p className="text-xs text-slate-500">
-                    Custom colors are applied only to page backgrounds, buttons, and accents. All text uses standard colors for optimal readability and accessibility.
-                  </p>
-                </div>
               </div>
             </CardContent>
           </Card>

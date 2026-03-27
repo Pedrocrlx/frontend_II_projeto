@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { userService } from "@/services/userService";
 import { toast } from "sonner";
 import GridIcon from "@/components/landing/GridIcon";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -139,15 +140,13 @@ export default function LoginPage() {
                   Forgot?
                 </Link>
               </div>
-              <input
-                type="password"
+              <PasswordInput
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${errors.password ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
-                  }`}
+                error={!!errors.password}
               />
               {errors.password && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.password}</p>

@@ -456,13 +456,8 @@ export default function BookingsPage() {
                   hasBookings: (date) =>
                     datesWithBookings.has(format(date, "yyyy-MM-dd")),
                 }}
-                modifiersStyles={{
-                  hasBookings: {
-                    fontWeight: "bold",
-                    textDecoration: "underline",
-                    textDecorationColor: "rgb(59, 130, 246)",
-                    textUnderlineOffset: "4px",
-                  },
+                modifiersClassNames={{
+                  hasBookings: "font-bold underline decoration-blue-500 underline-offset-4",
                 }}
                 className="rounded-xl w-full lg:w-auto"
               />
@@ -471,7 +466,12 @@ export default function BookingsPage() {
             {/* Bookings for selected date - takes remaining space */}
             <div className="flex-1 min-w-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-sm">
               <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-50 mb-4">
-                {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                {new Intl.DateTimeFormat(undefined, {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                }).format(selectedDate)}
               </h3>
 
               {bookingsForSelectedDate.length === 0 ? (
@@ -586,7 +586,13 @@ export default function BookingsPage() {
                               {t.dashboard.bookings.bookedAt}
                             </p>
                             <p className="font-semibold text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
-                              {format(new Date(booking.startTime), "MMM d, HH:mm")}
+                              {new Intl.DateTimeFormat(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              }).format(new Date(booking.startTime))}
                             </p>
                           </div>
                           <div>
@@ -624,81 +630,88 @@ export default function BookingsPage() {
             </DrawerTitle>
             <DrawerDescription className="font-medium">
               {selectedBooking &&
-                format(new Date(selectedBooking.startTime), "EEEE, MMMM d, yyyy")}
+                new Intl.DateTimeFormat(undefined, {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                }).format(new Date(selectedBooking.startTime))}
             </DrawerDescription>
           </DrawerHeader>
 
           {selectedBooking && (
-            <div className="p-6 pt-0 space-y-6">
-              {/* Status */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                  {t.dashboard.bookings.status}
-                </span>
-                {getStatusBadge(selectedBooking.status)}
-              </div>
-
-              {/* Time */}
-              <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-100 dark:border-blue-900">
-                <ClockIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <div>
-                  <p className="font-bold text-blue-900 dark:text-blue-100">
-                    {format(new Date(selectedBooking.startTime), "HH:mm")} -{" "}
-                    {format(new Date(selectedBooking.endTime), "HH:mm")}
-                  </p>
-                  <p className="text-sm text-blue-600 dark:text-blue-400">
-                    {selectedBooking.service.duration} {t.dashboard.bookings.minutes}
-                  </p>
-                </div>
-              </div>
-
-              {/* Customer */}
-              <div className="space-y-3">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  {t.dashboard.bookings.customer}
-                </p>
-                <div className="flex items-center gap-3">
-                  <UserIcon className="w-5 h-5 text-slate-400" />
-                  <span className="font-semibold text-slate-900 dark:text-slate-50">
-                    {selectedBooking.customerName}
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="space-y-6 overflow-y-auto px-6 pt-0 pb-4">
+                {/* Status */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                    {t.dashboard.bookings.status}
                   </span>
+                  {getStatusBadge(selectedBooking.status)}
                 </div>
-                <div className="flex items-center gap-3">
-                  <PhoneIcon className="w-5 h-5 text-slate-400" />
-                  <a
-                    href={`tel:${selectedBooking.customerPhone}`}
-                    className="font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {selectedBooking.customerPhone}
-                  </a>
-                </div>
-              </div>
 
-              {/* Service & Barber */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-                    {t.dashboard.bookings.service}
-                  </p>
-                  <p className="font-bold text-slate-900 dark:text-slate-50">
-                    {selectedBooking.service.name}
-                  </p>
-                  <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">
-                    ${selectedBooking.service.price}
-                  </p>
+                {/* Time */}
+                <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-100 dark:border-blue-900">
+                  <ClockIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div>
+                    <p className="font-bold text-blue-900 dark:text-blue-100">
+                      {format(new Date(selectedBooking.startTime), "HH:mm")} -{" "}
+                      {format(new Date(selectedBooking.endTime), "HH:mm")}
+                    </p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400">
+                      {selectedBooking.service.duration} {t.dashboard.bookings.minutes}
+                    </p>
+                  </div>
                 </div>
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-                    {t.dashboard.bookings.barber}
+
+                {/* Customer */}
+                <div className="space-y-3">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    {t.dashboard.bookings.customer}
                   </p>
-                  <p className="font-bold text-slate-900 dark:text-slate-50">
-                    {selectedBooking.barber.name}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <UserIcon className="w-5 h-5 text-slate-400" />
+                    <span className="font-semibold text-slate-900 dark:text-slate-50">
+                      {selectedBooking.customerName}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <PhoneIcon className="w-5 h-5 text-slate-400" />
+                    <a
+                      href={`tel:${selectedBooking.customerPhone}`}
+                      className="font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      {selectedBooking.customerPhone}
+                    </a>
+                  </div>
+                </div>
+
+                {/* Service & Barber */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                      {t.dashboard.bookings.service}
+                    </p>
+                    <p className="font-bold text-slate-900 dark:text-slate-50">
+                      {selectedBooking.service.name}
+                    </p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">
+                      ${selectedBooking.service.price}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                      {t.dashboard.bookings.barber}
+                    </p>
+                    <p className="font-bold text-slate-900 dark:text-slate-50">
+                      {selectedBooking.barber.name}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* Actions */}
-              <DrawerFooter className="px-0 pt-4 gap-2">
+              <DrawerFooter className="px-6 pt-4 pb-6 gap-2">
                 {selectedBooking.status === "PENDING" && (
                   <Button
                     onClick={() => handleConfirmBooking(selectedBooking.id)}

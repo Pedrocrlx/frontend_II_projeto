@@ -6,6 +6,10 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import GridIcon from "@/components/landing/GridIcon";
+import { PasswordInput } from "@/components/ui/password-input";
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
+import { PasswordRequirements } from "@/components/ui/password-requirements";
+import { validatePassword } from "@/lib/utils/passwordStrength";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -21,18 +25,54 @@ export default function SignUpPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+
+    const nextFormData = {
+      ...formData,
       [name]: value,
-    }));
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
+    };
+
+    setFormData(nextFormData);
+
+    setErrors((prev) => {
+      const nextErrors = { ...prev };
+
+      if (name === "password") {
+        const passwordError = validatePassword(value);
+
+        if (passwordError) {
+          nextErrors.password = passwordError;
+        } else {
+          delete nextErrors.password;
+        }
+
+        if (
+          nextFormData.confirmPassword &&
+          nextFormData.confirmPassword !== value
+        ) {
+          nextErrors.confirmPassword = "Passwords do not match";
+        } else {
+          delete nextErrors.confirmPassword;
+        }
+
+        return nextErrors;
+      }
+
+      if (name === "confirmPassword") {
+        if (value !== nextFormData.password) {
+          nextErrors.confirmPassword = "Passwords do not match";
+        } else {
+          delete nextErrors.confirmPassword;
+        }
+
+        return nextErrors;
+      }
+
+      if (nextErrors[name]) {
+        delete nextErrors[name];
+      }
+
+      return nextErrors;
+    });
   };
 
   const validateForm = () => {
@@ -48,10 +88,10 @@ export default function SignUpPage() {
       newErrors.email = "Please enter a valid email";
     }
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+    // Validate password with new enhanced rules
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      newErrors.password = passwordError;
     }
 
     if (formData.password !== formData.confirmPassword) {
@@ -164,18 +204,27 @@ export default function SignUpPage() {
               <label htmlFor="password" className="block text-sm font-medium text-slate-900 dark:text-slate-200 mb-1">
                 Password
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${errors.password ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
-                  }`}
+                error={!!errors.password}
               />
+              
+              {/* Password Strength Indicator */}
+              <div className="mt-2">
+                <PasswordStrengthIndicator password={formData.password} />
+              </div>
+              
+              {/* Password Requirements Checklist */}
+              <div className="mt-3">
+                <PasswordRequirements password={formData.password} />
+              </div>
+              
               {errors.password && (
-                <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.password}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm mt-2">{errors.password}</p>
               )}
             </div>
 
@@ -184,15 +233,13 @@ export default function SignUpPage() {
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-900 dark:text-slate-200 mb-1">
                 Confirm Password
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${errors.confirmPassword ? "border-red-500 dark:border-red-600" : "border-slate-200 dark:border-slate-700"
-                  }`}
+                error={!!errors.confirmPassword}
               />
               {errors.confirmPassword && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.confirmPassword}</p>

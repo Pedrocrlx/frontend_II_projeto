@@ -20,12 +20,16 @@ bun run lint         # Run ESLint
 
 ### Testing (Jest)
 ```bash
-bun run test                              # Run all tests
+bun run test                              # Run all tests (CORRECT)
 bun run test:watch                        # Run tests in watch mode
 bun run test -- path/to/file.test.ts      # Run a single test file
 bun run test -- --testNamePattern="test name"  # Run tests matching pattern
 bun run test -- path/to/file.test.ts --testNamePattern="specific test"  # Single test in file
 ```
+
+> **⚠️ IMPORTANT:** Always use `bun run test`, NOT `bun test`.
+> - `bun run test` → Runs Jest (correct)
+> - `bun test` → Runs Bun's native test runner (incompatible with Jest mocks)
 
 ### Database (Prisma + Docker)
 ```bash

@@ -218,7 +218,7 @@ export default function BarbersPage() {
     // Validate international phone number
     const phoneValidation = validateInternationalPhone(formData.phone, selectedCountry);
     if (!phoneValidation.isValid) {
-      toast.error(phoneValidation.error || "Invalid phone number format");
+      toast.error(phoneValidation.error || t.dashboard.barbers.invalidPhoneFormat);
       return;
     }
 
@@ -391,118 +391,120 @@ export default function BarbersPage() {
             </DrawerDescription>
           </DrawerHeader>
 
-          <form onSubmit={handleSubmit} className="p-6 pt-0 space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                {t.dashboard.barbers.photo}
-              </label>
-              <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                <div className="w-16 h-16 rounded-full overflow-hidden bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center relative">
-                  {formData.imageUrl ? (
-                    <img src={formData.imageUrl} alt="Barber Preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-bold text-slate-400">{t.dashboard.common.noPhoto}</span>
-                  )}
-                  {isUploading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <p className="text-xs text-slate-500">{t.dashboard.common.maxSize}</p>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading || isSubmitting}
-                    className="h-8 text-xs font-bold rounded-lg"
-                  >
-                    {formData.imageUrl ? t.dashboard.common.changePhoto : t.dashboard.common.uploadPhoto}
-                  </Button>
-                  <input 
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageUpload}
-                    accept="image/*"
-                    className="hidden"
-                  />
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+            <div className="space-y-5 overflow-y-auto px-6 pt-0 pb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  {t.dashboard.barbers.photo}
+                </label>
+                <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center relative">
+                    {formData.imageUrl ? (
+                      <img src={formData.imageUrl} alt={t.dashboard.barbers.photoPreviewAlt} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-bold text-slate-400">{t.dashboard.common.noPhoto}</span>
+                    )}
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <p className="text-xs text-slate-500">{t.dashboard.common.maxSize}</p>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading || isSubmitting}
+                      className="h-8 text-xs font-bold rounded-lg"
+                    >
+                      {formData.imageUrl ? t.dashboard.common.changePhoto : t.dashboard.common.uploadPhoto}
+                    </Button>
+                    <input 
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                {t.dashboard.barbers.name}
-              </label>
-              <Input 
-                placeholder={t.dashboard.barbers.namePlaceholder}
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                className="h-11 rounded-xl"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                {t.dashboard.barbers.description}
-              </label>
-              <Input 
-                placeholder={t.dashboard.barbers.descriptionPlaceholder}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="h-11 rounded-xl"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                {t.dashboard.barbers.phone}
-              </label>
-              <div className="grid grid-cols-[120px_1fr] gap-3">
-                <div>
-                  <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                    <SelectTrigger className="h-11 px-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 text-sm font-medium">
-                      <SelectValue placeholder="Code" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(COUNTRY_CONFIGS).map((country) => (
-                        <SelectItem key={country.code} value={country.code}>
-                          {country.code} ({country.dialCode})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  {t.dashboard.barbers.name}
+                </label>
                 <Input 
-                  placeholder={COUNTRY_CONFIGS[selectedCountry].placeholder}
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder={t.dashboard.barbers.namePlaceholder}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  maxLength={COUNTRY_CONFIGS[selectedCountry].maxLength}
                   className="h-11 rounded-xl"
                 />
               </div>
-              <p className="text-xs text-slate-500">
-                Example: {COUNTRY_CONFIGS[selectedCountry].dialCode} {COUNTRY_CONFIGS[selectedCountry].placeholder}
-              </p>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  {t.dashboard.barbers.description}
+                </label>
+                <Input 
+                  placeholder={t.dashboard.barbers.descriptionPlaceholder}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="h-11 rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  {t.dashboard.barbers.phone}
+                </label>
+                <div className="grid grid-cols-[120px_1fr] gap-3">
+                  <div>
+                    <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                      <SelectTrigger className="h-11 px-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 text-sm font-medium">
+                        <SelectValue placeholder={t.dashboard.barbers.countryCodePlaceholder} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(COUNTRY_CONFIGS).map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.code} ({country.dialCode})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Input 
+                    placeholder={COUNTRY_CONFIGS[selectedCountry].placeholder}
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    required
+                    maxLength={COUNTRY_CONFIGS[selectedCountry].maxLength}
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+                <p className="text-xs text-slate-500">
+                  {t.dashboard.barbers.example}: {COUNTRY_CONFIGS[selectedCountry].dialCode} {COUNTRY_CONFIGS[selectedCountry].placeholder}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  {t.dashboard.barbers.instagram}
+                </label>
+                <Input 
+                  placeholder={t.dashboard.barbers.instagramPlaceholder}
+                  value={formData.instagram}
+                  onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                  className="h-11 rounded-xl"
+                />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                {t.dashboard.barbers.instagram}
-              </label>
-              <Input 
-                placeholder={t.dashboard.barbers.instagramPlaceholder}
-                value={formData.instagram}
-                onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-                className="h-11 rounded-xl"
-              />
-            </div>
-
-            <DrawerFooter className="px-0 pt-6">
+            <DrawerFooter className="px-6 pt-4 pb-6">
               <Button type="submit" disabled={isSubmitting || isUploading} className="w-full font-bold h-12 rounded-xl text-base shadow-lg shadow-blue-500/20">
                 {isSubmitting ? t.dashboard.barbers.processing : editingId ? t.dashboard.barbers.saveChanges : t.dashboard.barbers.createBarber}
               </Button>

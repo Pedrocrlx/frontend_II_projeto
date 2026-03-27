@@ -85,7 +85,7 @@ export default function SettingsPage() {
         toast.success(t.dashboard.settings.logoUploaded, { id: toastId });
         fetchShopData(); // Refresh data to ensure consistency
       } else {
-        throw new Error("Shop ID not found.");
+        throw new Error(t.dashboard.settings.errorShopNotFound);
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -143,7 +143,7 @@ export default function SettingsPage() {
               <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center group">
                   {formData.logoUrl ? (
-                    <img src={formData.logoUrl} alt="Shop Logo" className="w-full h-full object-cover" />
+                    <img src={formData.logoUrl} alt={t.dashboard.settings.shopLogoAlt} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-2xl font-bold text-slate-300">{t.dashboard.settings.logoPlaceholder}</span>
                   )}
