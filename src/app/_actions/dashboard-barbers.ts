@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { StorageService } from "@/services/storageService";
+import { getAuthenticatedBarberShopContext } from "./_helpers/auth-context";
 
 export interface BarberData {
   name: string;
@@ -12,24 +13,21 @@ export interface BarberData {
   imageUrl?: string;
 }
 
-export async function getShopByUserId(supabaseId: string) {
+export async function getShopByUserId() {
   try {
-    const user = await prisma.user.findUnique({
-      where: { supabaseId },
-      include: {
-        barberShop: {
-          include: {
-            barbers: true,
-          },
-        },
-      },
+    const authContext = await getAuthenticatedBarberShopContext();
+    if (!authContext) return null;
+
+    const shop = await prisma.barberShop.findUnique({
+      where: { id: authContext.barberShopId },
+      include: { barbers: true },
     });
 
-    if (!user?.barberShop) return null;
+    if (!shop) return null;
 
     return {
-      ...user.barberShop,
-      barbers: user.barberShop.barbers,
+      ...shop,
+      barbers: shop.barbers,
     };
   } catch (error) {
     console.error("Error fetching shop:", error);
@@ -37,11 +35,16 @@ export async function getShopByUserId(supabaseId: string) {
   }
 }
 
-export async function createBarber(barberShopId: string, data: BarberData) {
+export async function createBarber(data: BarberData) {
   try {
+    const authContext = await getAuthenticatedBarberShopContext();
+    if (!authContext) {
+      return { error: "Unauthorized." };
+    }
+
     // Check barber limit (max 10)
     const count = await prisma.barber.count({
-      where: { barberShopId },
+      where: { barberShopId: authContext.barberShopId },
     });
 
     if (count >= 10) {
@@ -51,7 +54,7 @@ export async function createBarber(barberShopId: string, data: BarberData) {
     const barber = await prisma.barber.create({
       data: {
         ...data,
-        barberShopId,
+        barberShopId: authContext.barberShopId,
       },
     });
 
@@ -65,19 +68,51 @@ export async function createBarber(barberShopId: string, data: BarberData) {
 
 export async function updateBarber(id: string, data: Partial<BarberData>) {
   try {
-    const existingBarber = await prisma.barber.findUnique({ where: { id } });
+    const authContext = await getAuthenticatedBarberShopContext();
+    if (!authContext) {
+      return { error: "Unauthorized." };
+    }
+
+    const existingBarber = await prisma.barber.findFirst({
+      where: {
+        id,
+        barberShopId: authContext.barberShopId,
+      },
+    });
+
+    if (!existingBarber) {
+      return { error: "Barber not found." };
+    }
 
     if (existingBarber?.imageUrl && data.imageUrl && existingBarber.imageUrl !== data.imageUrl) {
       await StorageService.deleteImage(existingBarber.imageUrl);
     }
 
-    const barber = await prisma.barber.update({
-      where: { id },
+    const barber = await prisma.barber.updateMany({
+      where: {
+        id,
+        barberShopId: authContext.barberShopId,
+      },
       data,
     });
 
+    if (barber.count === 0) {
+      return { error: "Barber not found." };
+    }
+
+    const updatedBarber = await prisma.barber.findFirst({
+      where: {
+        id,
+        barberShopId: authContext.barberShopId,
+      },
+    });
+
+    if (!updatedBarber) {
+      return { error: "Barber not found." };
+    }
+
     revalidatePath("/dashboard/barbers");
-    return { barber };
+    return { barber: updatedBarber };
   } catch (error) {
     console.error("Error updating barber:", error);
     return { error: "Failed to update barber." };
@@ -86,7 +121,17 @@ export async function updateBarber(id: string, data: Partial<BarberData>) {
 
 export async function deleteBarber(id: string) {
   try {
-    const barber = await prisma.barber.findUnique({ where: { id } });
+    const authContext = await getAuthenticatedBarberShopContext();
+    if (!authContext) {
+      return { error: "Unauthorized." };
+    }
+
+    const barber = await prisma.barber.findFirst({
+      where: {
+        id,
+        barberShopId: authContext.barberShopId,
+      },
+    });
     
     if (!barber) {
       return { error: "Barber not found." };
@@ -94,7 +139,7 @@ export async function deleteBarber(id: string) {
 
     // Check minimum barber requirement (at least 1 barber must remain)
     const barberCount = await prisma.barber.count({
-      where: { barberShopId: barber.barberShopId },
+      where: { barberShopId: authContext.barberShopId },
     });
 
     if (barberCount <= 1) {
@@ -105,8 +150,11 @@ export async function deleteBarber(id: string) {
       await StorageService.deleteImage(barber.imageUrl);
     }
 
-    await prisma.barber.delete({
-      where: { id },
+    await prisma.barber.deleteMany({
+      where: {
+        id,
+        barberShopId: authContext.barberShopId,
+      },
     });
 
     revalidatePath("/dashboard/barbers");

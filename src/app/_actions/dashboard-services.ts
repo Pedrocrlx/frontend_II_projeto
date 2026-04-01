@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getAuthenticatedBarberShopContext } from "./_helpers/auth-context";
 
 export interface ServiceData {
   name: string;
@@ -10,26 +11,23 @@ export interface ServiceData {
   duration: number;
 }
 
-export async function getShopByUserId(supabaseId: string) {
+export async function getShopByUserId() {
   try {
-    const user = await prisma.user.findUnique({
-      where: { supabaseId },
-      include: {
-        barberShop: {
-          include: {
-            services: true,
-          },
-        },
-      },
+    const authContext = await getAuthenticatedBarberShopContext();
+    if (!authContext) return null;
+
+    const shop = await prisma.barberShop.findUnique({
+      where: { id: authContext.barberShopId },
+      include: { services: true },
     });
 
-    if (!user?.barberShop) return null;
+    if (!shop) return null;
 
     // Transform services to convert Decimal to string
     // This is necessary because Prisma's Decimal type cannot be directly serialized to JSON
     return {
-      ...user.barberShop,
-      services: user.barberShop.services.map((service) => ({
+      ...shop,
+      services: shop.services.map((service) => ({
         ...service,
         price: service.price.toString(), // Convert Decimal to string
       })),
@@ -41,11 +39,16 @@ export async function getShopByUserId(supabaseId: string) {
   }
 }
 
-export async function createService(barberShopId: string, data: ServiceData) {
+export async function createService(data: ServiceData) {
   try {
+    const authContext = await getAuthenticatedBarberShopContext();
+    if (!authContext) {
+      return { error: "Unauthorized." };
+    }
+
     // Check service limit (max 20)
     const count = await prisma.service.count({
-      where: { barberShopId },
+      where: { barberShopId: authContext.barberShopId },
     });
 
     if (count >= 20) {
@@ -55,7 +58,7 @@ export async function createService(barberShopId: string, data: ServiceData) {
     const service = await prisma.service.create({
       data: {
         ...data,
-        barberShopId,
+        barberShopId: authContext.barberShopId,
       },
     });
 
@@ -69,10 +72,33 @@ export async function createService(barberShopId: string, data: ServiceData) {
 
 export async function updateService(id: string, data: Partial<ServiceData>) {
   try {
-    const service = await prisma.service.update({
-      where: { id },
+    const authContext = await getAuthenticatedBarberShopContext();
+    if (!authContext) {
+      return { error: "Unauthorized." };
+    }
+
+    const updateResult = await prisma.service.updateMany({
+      where: {
+        id,
+        barberShopId: authContext.barberShopId,
+      },
       data,
     });
+
+    if (updateResult.count === 0) {
+      return { error: "Service not found." };
+    }
+
+    const service = await prisma.service.findFirst({
+      where: {
+        id,
+        barberShopId: authContext.barberShopId,
+      },
+    });
+
+    if (!service) {
+      return { error: "Service not found." };
+    }
 
     revalidatePath("/dashboard/services");
     return { service: { ...service, price: service.price.toString() } }; // Convert Decimal to string
@@ -84,7 +110,17 @@ export async function updateService(id: string, data: Partial<ServiceData>) {
 
 export async function deleteService(id: string) {
   try {
-    const service = await prisma.service.findUnique({ where: { id } });
+    const authContext = await getAuthenticatedBarberShopContext();
+    if (!authContext) {
+      return { error: "Unauthorized." };
+    }
+
+    const service = await prisma.service.findFirst({
+      where: {
+        id,
+        barberShopId: authContext.barberShopId,
+      },
+    });
     
     if (!service) {
       return { error: "Service not found." };
@@ -92,15 +128,18 @@ export async function deleteService(id: string) {
 
     // Check minimum service requirement (at least 1 service must remain)
     const serviceCount = await prisma.service.count({
-      where: { barberShopId: service.barberShopId },
+      where: { barberShopId: authContext.barberShopId },
     });
 
     if (serviceCount <= 1) {
       return { error: "Cannot delete the last service. At least 1 service is required." };
     }
 
-    await prisma.service.delete({
-      where: { id },
+    await prisma.service.deleteMany({
+      where: {
+        id,
+        barberShopId: authContext.barberShopId,
+      },
     });
 
     revalidatePath("/dashboard/services");

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ["/dashboard/*", "/onboarding",];
+const PROTECTED_ROUTES = ["/dashboard", "/onboarding"];
 
 // Routes that should redirect authenticated users away (login/signup pages)
 const AUTH_ROUTES = [

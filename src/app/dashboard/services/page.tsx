@@ -24,6 +24,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+interface ShopWithServices {
+  id: string;
+  services: Service[];
+}
+
+interface ActionErrorResult {
+  error: string;
+}
+
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error === "string" && error.trim().length > 0) {
+    return error;
+  }
+
+  return fallback;
+}
+
 // --- Icons ---
 function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -64,9 +85,9 @@ const PRICE_OPTIONS = [5, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80
 const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120];
 
 export default function ServicesPage() {
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { t } = useI18n();
-  const [shop, setShop] = useState<any>(null);
+  const [shop, setShop] = useState<ShopWithServices | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -82,16 +103,19 @@ export default function ServicesPage() {
   });
 
   const fetchShopData = useCallback(async () => {
-    if (!user?.id) return;
+    if (!isAuthenticated) return;
     
     setIsLoading(true);
     try {
-      const shopData = await getShopByUserId(user.id);
+      const shopData = await getShopByUserId();
       if (shopData) {
-        setShop(shopData);
-        setServices(shopData.services);
+        const typedShopData = shopData as ShopWithServices;
+        setShop(typedShopData);
+        setServices(typedShopData.services);
       } else {
-        console.warn("No shop found for user:", user.id);
+        setShop(null);
+        setServices([]);
+        console.warn("No shop found for current authenticated user.");
       }
     } catch (error) {
       console.error("Error fetching shop data:", error);
@@ -99,7 +123,7 @@ export default function ServicesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, t.dashboard.services.errorTitle]);
+  }, [isAuthenticated, t.dashboard.services.errorTitle]);
 
   useEffect(() => {
     fetchShopData();
@@ -125,7 +149,7 @@ export default function ServicesPage() {
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user?.id) {
+    if (!isAuthenticated) {
       toast.error(t.dashboard.services.errorNotAuth);
       return;
     }
@@ -147,31 +171,33 @@ export default function ServicesPage() {
         if (result.error) throw new Error(result.error);
         toast.success(t.dashboard.services.successUpdated);
       } else {
-        const result = await createService(shop.id, formData);
+        const result = await createService(formData);
         if (result.error) throw new Error(result.error);
         toast.success(t.dashboard.services.successCreated);
       }
       setIsDrawerOpen(false);
       fetchShopData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Submission error:", error);
-      toast.error(error.message || t.dashboard.services.errorGeneric);
+      toast.error(extractErrorMessage(error, t.dashboard.services.errorGeneric));
     } finally {
       setIsSubmitting(false);
     }
-  }, [user?.id, shop?.id, formData, editingId, fetchShopData, t.dashboard.services]);
+  }, [isAuthenticated, shop?.id, formData, editingId, fetchShopData, t.dashboard.services]);
 
   const handleDelete = useCallback(async (id: string) => {
     if (!confirm(t.dashboard.services.deleteConfirm)) return;
 
     try {
       const result = await deleteService(id);
-      if (result.error) throw new Error(result.error);
+      if ((result as ActionErrorResult).error) {
+        throw new Error((result as ActionErrorResult).error);
+      }
       toast.success(t.dashboard.services.successDeleted);
       fetchShopData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Delete error:", error);
-      toast.error(error.message || t.dashboard.services.errorDelete);
+      toast.error(extractErrorMessage(error, t.dashboard.services.errorDelete));
     }
   }, [fetchShopData, t.dashboard.services]);
 

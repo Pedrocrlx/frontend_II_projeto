@@ -4,6 +4,7 @@
 import { generateMetadata } from './page';
 import { BarberService } from '@/services/barberService';
 import { ThemeService } from '@/services/themeService';
+import type { BarberShopData } from '@/services/barberService';
 
 // Mock the services
 jest.mock('@/services/barberService');
@@ -18,12 +19,16 @@ describe('generateMetadata', () => {
   });
 
   it('should generate metadata with favicon when logo is available', async () => {
-    const mockBarber = {
+    const mockBarber: BarberShopData = {
       id: '1',
       name: 'Test Barbershop',
       slug: 'test-barbershop',
       description: 'A great barbershop',
-      logoUrl: null,
+      address: 'Test Address',
+      logoUrl: undefined,
+      services: [],
+      barbers: [],
+      duration: 30,
     };
 
     const mockTheme = {
@@ -32,13 +37,13 @@ describe('generateMetadata', () => {
       logoUrl: 'https://example.com/storage/photos/shops/logo.webp',
     };
 
-    mockBarberService.getProfileBySlug.mockResolvedValue(mockBarber as any);
+    mockBarberService.getProfileBySlug.mockResolvedValue(mockBarber);
     mockThemeService.getThemeBySlug.mockResolvedValue(mockTheme);
 
     const params = Promise.resolve({ slug: 'test-barbershop' });
     const metadata = await generateMetadata({ params });
 
-    expect(metadata.title).toBe('Test Barbershop');
+    expect(metadata.title).toBe('Test Barbershop - Book Your Appointment');
     expect(metadata.description).toBe('A great barbershop');
     if (metadata.icons && typeof metadata.icons === 'object' && 'apple' in metadata.icons) {
       expect(metadata.icons.apple).toBe(mockTheme.logoUrl); // Should use theme logo first

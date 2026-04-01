@@ -31,7 +31,26 @@ import { createClient } from "@supabase/supabase-js";
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockSupabase = createClient as jest.Mock;
 
-function makeRequest(payload: any, token?: string) {
+type MockablePrisma = {
+  user: {
+    findUnique: jest.Mock;
+    create: jest.Mock;
+  };
+  barberShop: {
+    findUnique: jest.Mock;
+  };
+  $transaction: jest.Mock;
+};
+
+const prismaMock = mockPrisma as unknown as MockablePrisma;
+
+interface MockAuthClient {
+  auth: {
+    getUser: jest.Mock;
+  };
+}
+
+function makeRequest(payload: unknown, token?: string) {
   const headers = new Headers();
   headers.set("content-type", "application/json");
   if (token) {
@@ -109,7 +128,7 @@ describe("POST /api/onboarding/complete", () => {
       },
     };
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
 
     const request = makeRequest(validPayload, "invalid-token");
     const response = await POST(request);
@@ -129,7 +148,7 @@ describe("POST /api/onboarding/complete", () => {
       },
     };
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
 
     const payload = {
       ...validPayload,
@@ -154,7 +173,7 @@ describe("POST /api/onboarding/complete", () => {
       },
     };
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
 
     const payload = {
       ...validPayload,
@@ -179,7 +198,7 @@ describe("POST /api/onboarding/complete", () => {
       },
     };
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
 
     const reservedSlugs = ["admin", "api", "dashboard"];
 
@@ -210,7 +229,7 @@ describe("POST /api/onboarding/complete", () => {
       },
     };
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
 
     const payload = {
       ...validPayload,
@@ -235,7 +254,7 @@ describe("POST /api/onboarding/complete", () => {
       },
     };
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
 
     const payload = {
       ...validPayload,
@@ -260,9 +279,9 @@ describe("POST /api/onboarding/complete", () => {
       },
     };
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
-    mockPrisma.user.findUnique.mockResolvedValue({ id: "db-user-1" } as any);
-    mockPrisma.barberShop.findUnique.mockResolvedValue({ id: "existing-shop" } as any);
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
+    prismaMock.user.findUnique.mockResolvedValue({ id: "db-user-1" });
+    prismaMock.barberShop.findUnique.mockResolvedValue({ id: "existing-shop" });
 
     const request = makeRequest(validPayload, "valid-token");
     const response = await POST(request);
@@ -282,18 +301,18 @@ describe("POST /api/onboarding/complete", () => {
       },
     };
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
-    mockPrisma.user.findUnique.mockResolvedValue(null); // User doesn't exist yet
-    mockPrisma.user.create.mockResolvedValue({
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
+    prismaMock.user.findUnique.mockResolvedValue(null); // User doesn't exist yet
+    prismaMock.user.create.mockResolvedValue({
       id: "new-db-user-1",
       supabaseId: "supabase-user-1",
       email: "newuser@example.com",
-    } as any);
-    mockPrisma.barberShop.findUnique.mockResolvedValue(null); // Slug available
-    mockPrisma.$transaction.mockResolvedValue({
+    });
+    prismaMock.barberShop.findUnique.mockResolvedValue(null); // Slug available
+    prismaMock.$transaction.mockResolvedValue({
       id: "new-shop-1",
       slug: "test-barbershop",
-    } as any);
+    });
 
     const request = makeRequest(validPayload, "valid-token");
     const response = await POST(request);
@@ -320,17 +339,17 @@ describe("POST /api/onboarding/complete", () => {
       },
     };
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
-    mockPrisma.user.findUnique.mockResolvedValue({
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
+    prismaMock.user.findUnique.mockResolvedValue({
       id: "existing-db-user-1",
       supabaseId: "supabase-user-1",
       email: "existing@example.com",
-    } as any);
-    mockPrisma.barberShop.findUnique.mockResolvedValue(null); // Slug available
-    mockPrisma.$transaction.mockResolvedValue({
+    });
+    prismaMock.barberShop.findUnique.mockResolvedValue(null); // Slug available
+    prismaMock.$transaction.mockResolvedValue({
       id: "new-shop-1",
       slug: "test-barbershop",
-    } as any);
+    });
 
     const request = makeRequest(validPayload, "valid-token");
     const response = await POST(request);
@@ -354,10 +373,10 @@ describe("POST /api/onboarding/complete", () => {
 
     const mockTransactionCallback = jest.fn();
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
-    mockPrisma.user.findUnique.mockResolvedValue({ id: "db-user-1" } as any);
-    mockPrisma.barberShop.findUnique.mockResolvedValue(null);
-    mockPrisma.$transaction.mockImplementation(async (callback) => {
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
+    prismaMock.user.findUnique.mockResolvedValue({ id: "db-user-1" });
+    prismaMock.barberShop.findUnique.mockResolvedValue(null);
+    prismaMock.$transaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
       await callback(mockTransactionCallback);
       return { id: "new-shop-1", slug: "test-barbershop" };
     });
@@ -365,7 +384,7 @@ describe("POST /api/onboarding/complete", () => {
     const request = makeRequest(validPayload, "valid-token");
     await POST(request);
 
-    expect(mockPrisma.$transaction).toHaveBeenCalled();
+    expect(prismaMock.$transaction).toHaveBeenCalled();
   });
 
   it("should return 500 on internal server error", async () => {
@@ -378,8 +397,8 @@ describe("POST /api/onboarding/complete", () => {
       },
     };
 
-    mockSupabase.mockReturnValue(mockAuthClient as any);
-    mockPrisma.user.findUnique.mockRejectedValue(new Error("Database connection failed"));
+    mockSupabase.mockReturnValue(mockAuthClient as MockAuthClient);
+    prismaMock.user.findUnique.mockRejectedValue(new Error("Database connection failed"));
 
     const request = makeRequest(validPayload, "valid-token");
     const response = await POST(request);

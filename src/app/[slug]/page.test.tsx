@@ -22,7 +22,7 @@ jest.mock("./_components/BookingSheet", () => ({
 }));
 
 const mockGetProfile = BarberService.getProfileBySlug as jest.Mock;
-const mockNotFound = notFound as jest.Mock;
+const mockNotFound = notFound as unknown as jest.Mock;
 
 function findTextInTree(node: React.ReactNode, text: string): boolean {
   if (node === null || node === undefined) return false;
@@ -30,8 +30,11 @@ function findTextInTree(node: React.ReactNode, text: string): boolean {
     return node.toString().includes(text);
   }
   if (Array.isArray(node)) return node.some((child) => findTextInTree(child, text));
-  if (React.isValidElement(node) && node.props.children) {
-    return findTextInTree(node.props.children, text);
+  if (React.isValidElement(node)) {
+    const nodeWithChildren = node as React.ReactElement<{ children?: React.ReactNode }>;
+    if (nodeWithChildren.props?.children) {
+      return findTextInTree(nodeWithChildren.props.children, text);
+    }
   }
   return false;
 }
@@ -92,7 +95,7 @@ describe("generateMetadata", () => {
 
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: "test-barber-shop" }) });
 
-    expect(metadata.title).toBe("Test Barber Shop");
+    expect(metadata.title).toBe("Test Barber Shop - Book Your Appointment");
     expect(metadata.description).toBe("A great shop");
   });
 
@@ -109,7 +112,9 @@ describe("generateMetadata", () => {
 
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: "test-barber-shop" }) });
 
-    expect(metadata.description).toBe("Book your appointment at Test Barber Shop");
+    expect(metadata.description).toBe(
+      "Book your appointment at Test Barber Shop. Professional barbershop services with online booking."
+    );
   });
 
   it("should return empty metadata for favicon.ico", async () => {

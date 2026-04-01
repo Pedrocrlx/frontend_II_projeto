@@ -224,7 +224,7 @@ describe("Barbers Page Phone Selector Logic", () => {
       Object.values(COUNTRY_CONFIGS).forEach(config => {
         requiredProperties.forEach(prop => {
           expect(config).toHaveProperty(prop);
-          expect((config as any)[prop]).toBeDefined();
+          expect(config[prop as keyof typeof config]).toBeDefined();
         });
       });
     });
@@ -278,8 +278,8 @@ describe("Barbers Page Phone Selector Logic", () => {
       });
 
       // Test null and undefined separately to handle them properly
-      expect(() => validateInternationalPhone(null as any, "PT")).toThrow();
-      expect(() => validateInternationalPhone(undefined as any, "PT")).toThrow();
+      expect(() => validateInternationalPhone(null as unknown as string, "PT")).toThrow();
+      expect(() => validateInternationalPhone(undefined as unknown as string, "PT")).toThrow();
     });
   });
 });

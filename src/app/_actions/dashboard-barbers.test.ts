@@ -2,6 +2,7 @@ import { getShopByUserId, createBarber, updateBarber, deleteBarber, BarberData }
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { StorageService } from "@/services/storageService";
+import { getAuthenticatedBarberShopContext } from "./_helpers/auth-context";
 
 // Mock Prisma
 jest.mock("@/lib/prisma", () => ({
@@ -9,14 +10,24 @@ jest.mock("@/lib/prisma", () => ({
     user: {
       findUnique: jest.fn(),
     },
+    barberShop: {
+      findUnique: jest.fn(),
+    },
     barber: {
       count: jest.fn(),
       create: jest.fn(),
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn(),
     },
   },
+}));
+
+jest.mock("./_helpers/auth-context", () => ({
+  getAuthenticatedBarberShopContext: jest.fn(),
 }));
 
 // Mock next/cache
@@ -35,18 +46,34 @@ jest.mock("@/services/storageService", () => ({
 type MockFn = jest.Mock;
 type MockPrismaType = {
   user: { findUnique: MockFn };
-  barber: { count: MockFn; create: MockFn; findUnique: MockFn; update: MockFn; delete: MockFn };
+  barberShop: { findUnique: MockFn };
+  barber: {
+    count: MockFn;
+    create: MockFn;
+    findFirst: MockFn;
+    findUnique: MockFn;
+    update: MockFn;
+    updateMany: MockFn;
+    delete: MockFn;
+    deleteMany: MockFn;
+  };
 };
 
 const mockPrisma = prisma as unknown as MockPrismaType;
 const mockRevalidatePath = revalidatePath as jest.Mock;
 const mockStorageService = StorageService as jest.Mocked<typeof StorageService>;
+const mockAuthContext = getAuthenticatedBarberShopContext as jest.MockedFunction<typeof getAuthenticatedBarberShopContext>;
 
 describe("Dashboard Barbers Server Actions", () => {
   let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    mockAuthContext.mockResolvedValue({
+      supabaseUserId: "supabase-id-1",
+      userId: "user-1",
+      barberShopId: "shop-1",
+    });
   });
 
   afterEach(() => {
@@ -64,29 +91,23 @@ describe("Dashboard Barbers Server Actions", () => {
         ],
       };
 
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: "user-1",
-        barberShop: mockShop,
-      } as any);
+      mockPrisma.barberShop.findUnique.mockResolvedValue(mockShop);
 
-      const result = await getShopByUserId("supabase-id-1");
+      const result = await getShopByUserId();
       expect(result).toEqual(mockShop);
     });
 
     it("should return null when user has no shop", async () => {
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: "user-1",
-        barberShop: null,
-      } as any);
+      mockAuthContext.mockResolvedValue(null);
 
-      const result = await getShopByUserId("supabase-id-1");
+      const result = await getShopByUserId();
       expect(result).toBeNull();
     });
 
     it("should return null on error", async () => {
-      mockPrisma.user.findUnique.mockRejectedValue(new Error("DB error"));
+      mockAuthContext.mockRejectedValue(new Error("DB error"));
 
-      const result = await getShopByUserId("supabase-id-1");
+      const result = await getShopByUserId();
       
       expect(result).toBeNull();
       expect(consoleErrorSpy).toHaveBeenCalledWith("Error fetching shop:", expect.any(Error));
@@ -117,7 +138,7 @@ describe("Dashboard Barbers Server Actions", () => {
         instagram: "@miguel",
       };
 
-      const result = await createBarber("shop-1", data);
+      const result = await createBarber(data);
       expect(result).toEqual({ barber: mockBarber });
       expect(mockRevalidatePath).toHaveBeenCalledWith("/dashboard/barbers");
     });
@@ -130,7 +151,7 @@ describe("Dashboard Barbers Server Actions", () => {
         phone: "123456789",
       };
 
-      const result = await createBarber("shop-1", data);
+      const result = await createBarber(data);
       expect(result).toEqual({ error: "Maximum limit of 10 barbers reached." });
     });
 
@@ -143,7 +164,7 @@ describe("Dashboard Barbers Server Actions", () => {
         phone: "123456789",
       };
 
-      const result = await createBarber("shop-1", data);
+      const result = await createBarber(data);
       
       expect(result).toEqual({ error: "Failed to create barber." });
       expect(consoleErrorSpy).toHaveBeenCalledWith("Error creating barber:", expect.any(Error));
@@ -164,8 +185,9 @@ describe("Dashboard Barbers Server Actions", () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.barber.findUnique.mockResolvedValue(mockBarber);
-      mockPrisma.barber.update.mockResolvedValue(mockBarber);
+      mockPrisma.barber.findFirst.mockResolvedValue(mockBarber);
+      mockPrisma.barber.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.barber.findFirst.mockResolvedValueOnce(mockBarber).mockResolvedValueOnce(mockBarber);
 
       const data: Partial<BarberData> = {
         name: "Miguel Updated",
@@ -196,8 +218,8 @@ describe("Dashboard Barbers Server Actions", () => {
         imageUrl: "new-image-url.jpg",
       };
 
-      mockPrisma.barber.findUnique.mockResolvedValue(existingBarber);
-      mockPrisma.barber.update.mockResolvedValue(updatedBarber);
+      mockPrisma.barber.findFirst.mockResolvedValueOnce(existingBarber).mockResolvedValueOnce(updatedBarber);
+      mockPrisma.barber.updateMany.mockResolvedValue({ count: 1 });
       mockStorageService.deleteImage.mockResolvedValue(undefined);
 
       const data: Partial<BarberData> = {
@@ -223,8 +245,8 @@ describe("Dashboard Barbers Server Actions", () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.barber.findUnique.mockResolvedValue(existingBarber);
-      mockPrisma.barber.update.mockResolvedValue(existingBarber);
+      mockPrisma.barber.findFirst.mockResolvedValueOnce(existingBarber).mockResolvedValueOnce(existingBarber);
+      mockPrisma.barber.updateMany.mockResolvedValue({ count: 1 });
 
       const data: Partial<BarberData> = {
         name: "Miguel Updated",
@@ -253,8 +275,8 @@ describe("Dashboard Barbers Server Actions", () => {
         imageUrl: "new-image-url.jpg",
       };
 
-      mockPrisma.barber.findUnique.mockResolvedValue(existingBarber);
-      mockPrisma.barber.update.mockResolvedValue(updatedBarber);
+      mockPrisma.barber.findFirst.mockResolvedValueOnce(existingBarber).mockResolvedValueOnce(updatedBarber);
+      mockPrisma.barber.updateMany.mockResolvedValue({ count: 1 });
 
       const data: Partial<BarberData> = {
         imageUrl: "new-image-url.jpg",
@@ -266,8 +288,8 @@ describe("Dashboard Barbers Server Actions", () => {
     });
 
     it("should return error on update failure", async () => {
-      mockPrisma.barber.findUnique.mockResolvedValue({} as any);
-      mockPrisma.barber.update.mockRejectedValue(new Error("DB error"));
+      mockPrisma.barber.findFirst.mockResolvedValue({ id: "barber-1", barberShopId: "shop-1" });
+      mockPrisma.barber.updateMany.mockRejectedValue(new Error("DB error"));
 
       const result = await updateBarber("barber-1", { name: "Test" });
       
@@ -290,9 +312,9 @@ describe("Dashboard Barbers Server Actions", () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.barber.findUnique.mockResolvedValue(mockBarber);
+      mockPrisma.barber.findFirst.mockResolvedValue(mockBarber);
       mockPrisma.barber.count.mockResolvedValue(2); // 2 barbers, can delete one
-      mockPrisma.barber.delete.mockResolvedValue(mockBarber);
+      mockPrisma.barber.deleteMany.mockResolvedValue({ count: 1 });
 
       const result = await deleteBarber("barber-1");
       
@@ -314,15 +336,15 @@ describe("Dashboard Barbers Server Actions", () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.barber.findUnique.mockResolvedValue(mockBarber);
+      mockPrisma.barber.findFirst.mockResolvedValue(mockBarber);
       mockPrisma.barber.count.mockResolvedValue(3); // 3 barbers, can delete one
-      mockPrisma.barber.delete.mockResolvedValue(mockBarber);
+      mockPrisma.barber.deleteMany.mockResolvedValue({ count: 1 });
       mockStorageService.deleteImage.mockResolvedValue(undefined);
 
       const result = await deleteBarber("barber-1");
 
       expect(mockStorageService.deleteImage).toHaveBeenCalledWith("barber-image-url.jpg");
-      expect(mockPrisma.barber.delete).toHaveBeenCalledWith({ where: { id: "barber-1" } });
+      expect(mockPrisma.barber.deleteMany).toHaveBeenCalledWith({ where: { id: "barber-1", barberShopId: "shop-1" } });
       expect(result).toEqual({ success: true });
     });
 
@@ -339,24 +361,24 @@ describe("Dashboard Barbers Server Actions", () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.barber.findUnique.mockResolvedValue(mockBarber);
+      mockPrisma.barber.findFirst.mockResolvedValue(mockBarber);
       mockPrisma.barber.count.mockResolvedValue(1); // Only 1 barber left
 
       const result = await deleteBarber("barber-1");
 
       expect(result).toEqual({ error: "Cannot delete the last barber. At least 1 barber is required." });
-      expect(mockPrisma.barber.delete).not.toHaveBeenCalled();
+      expect(mockPrisma.barber.deleteMany).not.toHaveBeenCalled();
       expect(mockStorageService.deleteImage).not.toHaveBeenCalled();
     });
 
     it("should return error when barber not found", async () => {
-      mockPrisma.barber.findUnique.mockResolvedValue(null);
+      mockPrisma.barber.findFirst.mockResolvedValue(null);
 
       const result = await deleteBarber("non-existent-id");
 
       expect(result).toEqual({ error: "Barber not found." });
       expect(mockPrisma.barber.count).not.toHaveBeenCalled();
-      expect(mockPrisma.barber.delete).not.toHaveBeenCalled();
+      expect(mockPrisma.barber.deleteMany).not.toHaveBeenCalled();
     });
 
     it("should return error on delete failure", async () => {
@@ -372,9 +394,9 @@ describe("Dashboard Barbers Server Actions", () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.barber.findUnique.mockResolvedValue(mockBarber);
+      mockPrisma.barber.findFirst.mockResolvedValue(mockBarber);
       mockPrisma.barber.count.mockResolvedValue(2);
-      mockPrisma.barber.delete.mockRejectedValue(new Error("DB error"));
+      mockPrisma.barber.deleteMany.mockRejectedValue(new Error("DB error"));
 
       const result = await deleteBarber("barber-1");
       

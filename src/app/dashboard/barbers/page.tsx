@@ -33,6 +33,27 @@ import {
 } from "@/components/ui/select";
 import { COUNTRY_CONFIGS, validateInternationalPhone } from "@/lib/utils/phone-validation";
 
+interface ShopWithBarbers {
+  id: string;
+  barbers: Barber[];
+}
+
+interface ActionErrorResult {
+  error: string;
+}
+
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error === "string" && error.trim().length > 0) {
+    return error;
+  }
+
+  return fallback;
+}
+
 // --- Icons ---
 function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -71,9 +92,9 @@ type Barber = {
 };
 
 export default function BarbersPage() {
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { t } = useI18n();
-  const [shop, setShop] = useState<any>(null);
+  const [shop, setShop] = useState<ShopWithBarbers | null>(null);
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -93,16 +114,19 @@ export default function BarbersPage() {
   });
 
   const fetchShopData = useCallback(async () => {
-    if (!user?.id) return;
+    if (!isAuthenticated) return;
     
     setIsLoading(true);
     try {
-      const shopData = await getShopByUserId(user.id);
+      const shopData = await getShopByUserId();
       if (shopData) {
-        setShop(shopData);
-        setBarbers(shopData.barbers);
+        const typedShopData = shopData as ShopWithBarbers;
+        setShop(typedShopData);
+        setBarbers(typedShopData.barbers);
       } else {
-        console.warn("No shop found for user:", user.id);
+        setShop(null);
+        setBarbers([]);
+        console.warn("No shop found for current authenticated user.");
       }
     } catch (error) {
       console.error("Error fetching shop data:", error);
@@ -110,7 +134,7 @@ export default function BarbersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, t.dashboard.barbers.errorTitle]);
+  }, [isAuthenticated, t.dashboard.barbers.errorTitle]);
 
   useEffect(() => {
     fetchShopData();
@@ -195,7 +219,7 @@ export default function BarbersPage() {
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user?.id) {
+    if (!isAuthenticated) {
       toast.error(t.dashboard.barbers.errorNotAuth);
       return;
     }
@@ -235,31 +259,33 @@ export default function BarbersPage() {
         if (result.error) throw new Error(result.error);
         toast.success(t.dashboard.barbers.successUpdated);
       } else {
-        const result = await createBarber(shop.id, dataToSubmit);
+        const result = await createBarber(dataToSubmit);
         if (result.error) throw new Error(result.error);
         toast.success(t.dashboard.barbers.successCreated);
       }
       setIsDrawerOpen(false);
       fetchShopData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Submission error:", error);
-      toast.error(error.message || t.dashboard.barbers.errorGeneric);
+      toast.error(extractErrorMessage(error, t.dashboard.barbers.errorGeneric));
     } finally {
       setIsSubmitting(false);
     }
-  }, [user?.id, shop?.id, formData, editingId, fetchShopData, t.dashboard.barbers]);
+  }, [isAuthenticated, shop?.id, formData, editingId, fetchShopData, selectedCountry, t.dashboard.barbers]);
 
   const handleDelete = useCallback(async (id: string) => {
     if (!confirm(t.dashboard.barbers.deleteConfirm)) return;
 
     try {
       const result = await deleteBarber(id);
-      if (result.error) throw new Error(result.error);
+      if ((result as ActionErrorResult).error) {
+        throw new Error((result as ActionErrorResult).error);
+      }
       toast.success(t.dashboard.barbers.successDeleted);
       fetchShopData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Delete error:", error);
-      toast.error(error.message || t.dashboard.barbers.errorDelete);
+      toast.error(extractErrorMessage(error, t.dashboard.barbers.errorDelete));
     }
   }, [fetchShopData, t.dashboard.barbers]);
 

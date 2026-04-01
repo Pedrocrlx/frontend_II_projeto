@@ -6,6 +6,7 @@ import {
   updateService, 
   deleteService 
 } from "./dashboard-services";
+import { getAuthenticatedBarberShopContext } from "./_helpers/auth-context";
 
 // Mocking prisma and next/cache
 jest.mock("@/lib/prisma", () => ({
@@ -13,14 +14,24 @@ jest.mock("@/lib/prisma", () => ({
     user: {
       findUnique: jest.fn(),
     },
+    barberShop: {
+      findUnique: jest.fn(),
+    },
     service: {
       count: jest.fn(),
       create: jest.fn(),
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn(),
     },
   },
+}));
+
+jest.mock("./_helpers/auth-context", () => ({
+  getAuthenticatedBarberShopContext: jest.fn(),
 }));
 
 jest.mock("next/cache", () => ({
@@ -28,6 +39,7 @@ jest.mock("next/cache", () => ({
 }));
 
 const mockRevalidatePath = revalidatePath as jest.Mock;
+const mockAuthContext = getAuthenticatedBarberShopContext as jest.MockedFunction<typeof getAuthenticatedBarberShopContext>;
 
 describe("Dashboard Services Actions", () => {
   const mockUserId = "user-123";
@@ -38,6 +50,11 @@ describe("Dashboard Services Actions", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    mockAuthContext.mockResolvedValue({
+      supabaseUserId: "supabase-id-1",
+      userId: "user-1",
+      barberShopId: mockShopId,
+    });
   });
 
   afterEach(() => {
@@ -55,12 +72,9 @@ describe("Dashboard Services Actions", () => {
         ],
       };
       
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        id: "internal-id",
-        barberShop: mockShop,
-      });
+      (prisma.barberShop.findUnique as jest.Mock).mockResolvedValue(mockShop);
 
-      const result = await getShopByUserId(mockUserId);
+      const result = await getShopByUserId();
       
       expect(result).toBeDefined();
       expect(result?.services).toHaveLength(2);
@@ -68,22 +82,22 @@ describe("Dashboard Services Actions", () => {
       expect(result?.services[0].price).toBe("25.00");
       expect(typeof result?.services[1].price).toBe("string");
       expect(result?.services[1].price).toBe("15.50");
-      expect(prisma.user.findUnique).toHaveBeenCalledWith({
-        where: { supabaseId: mockUserId },
-        include: expect.anything(),
+      expect(prisma.barberShop.findUnique).toHaveBeenCalledWith({
+        where: { id: mockShopId },
+        include: { services: true },
       });
     });
 
     it("should return null when user has no shop", async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-      const result = await getShopByUserId(mockUserId);
+      mockAuthContext.mockResolvedValue(null);
+      const result = await getShopByUserId();
       expect(result).toBeNull();
     });
 
     it("should return null and log error on database failure", async () => {
-      (prisma.user.findUnique as jest.Mock).mockRejectedValue(new Error("DB error"));
+      mockAuthContext.mockRejectedValue(new Error("DB error"));
       
-      const result = await getShopByUserId(mockUserId);
+      const result = await getShopByUserId();
       
       expect(result).toBeNull();
       expect(consoleErrorSpy).toHaveBeenCalledWith("Error fetching shop:", expect.any(Error));
@@ -105,7 +119,7 @@ describe("Dashboard Services Actions", () => {
         price: { toString: () => "20" }
       });
 
-      const result = await createService(mockShopId, serviceData);
+      const result = await createService(serviceData);
       
       expect(result.service).toBeDefined();
       expect(typeof result.service?.price).toBe("string");
@@ -116,7 +130,7 @@ describe("Dashboard Services Actions", () => {
 
     it("should return error when limit (20) is reached", async () => {
       (prisma.service.count as jest.Mock).mockResolvedValue(20);
-      const result = await createService(mockShopId, serviceData);
+      const result = await createService(serviceData);
       expect(result.error).toBe("Maximum limit of 20 services reached.");
       expect(prisma.service.create).not.toHaveBeenCalled();
     });
@@ -125,7 +139,7 @@ describe("Dashboard Services Actions", () => {
       (prisma.service.count as jest.Mock).mockResolvedValue(5);
       (prisma.service.create as jest.Mock).mockRejectedValue(new Error("DB error"));
       
-      const result = await createService(mockShopId, serviceData);
+      const result = await createService(serviceData);
       
       expect(result.error).toBe("Failed to create service.");
       expect(consoleErrorSpy).toHaveBeenCalledWith("Error creating service:", expect.any(Error));
@@ -135,10 +149,13 @@ describe("Dashboard Services Actions", () => {
   describe("updateService", () => {
     it("should update a service and convert price to string", async () => {
       const updateData = { name: "Updated Name" };
-      (prisma.service.update as jest.Mock).mockResolvedValue({ 
-        id: mockServiceId, 
-        ...updateData,
-        price: { toString: () => "20" }  // Mock Decimal with toString method
+      (prisma.service.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+      (prisma.service.findFirst as jest.Mock).mockResolvedValue({ 
+        id: mockServiceId,
+        name: "Updated Name",
+        price: { toString: () => "20" },
+        duration: 30,
+        barberShopId: mockShopId,
       });
 
       const result = await updateService(mockServiceId, updateData);
@@ -146,15 +163,15 @@ describe("Dashboard Services Actions", () => {
       expect(result.service).toBeDefined();
       expect(typeof result.service?.price).toBe("string");
       expect(result.service?.price).toBe("20");
-      expect(prisma.service.update).toHaveBeenCalledWith({
-        where: { id: mockServiceId },
+      expect(prisma.service.updateMany).toHaveBeenCalledWith({
+        where: { id: mockServiceId, barberShopId: mockShopId },
         data: updateData,
       });
       expect(mockRevalidatePath).toHaveBeenCalledWith("/dashboard/services");
     });
 
     it("should return error and log on update failure", async () => {
-      (prisma.service.update as jest.Mock).mockRejectedValue(new Error("DB error"));
+      (prisma.service.updateMany as jest.Mock).mockRejectedValue(new Error("DB error"));
       
       const result = await updateService(mockServiceId, { name: "Test" });
       
@@ -173,15 +190,15 @@ describe("Dashboard Services Actions", () => {
         barberShopId: mockShopId,
       };
 
-      (prisma.service.findUnique as jest.Mock).mockResolvedValue(mockService);
+      (prisma.service.findFirst as jest.Mock).mockResolvedValue(mockService);
       (prisma.service.count as jest.Mock).mockResolvedValue(2); // 2 services exist
-      (prisma.service.delete as jest.Mock).mockResolvedValue({});
+      (prisma.service.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
       
       const result = await deleteService(mockServiceId);
       
       expect(result.success).toBe(true);
-      expect(prisma.service.delete).toHaveBeenCalledWith({
-        where: { id: mockServiceId },
+      expect(prisma.service.deleteMany).toHaveBeenCalledWith({
+        where: { id: mockServiceId, barberShopId: mockShopId },
       });
       expect(mockRevalidatePath).toHaveBeenCalledWith("/dashboard/services");
     });
@@ -195,23 +212,23 @@ describe("Dashboard Services Actions", () => {
         barberShopId: mockShopId,
       };
 
-      (prisma.service.findUnique as jest.Mock).mockResolvedValue(mockService);
+      (prisma.service.findFirst as jest.Mock).mockResolvedValue(mockService);
       (prisma.service.count as jest.Mock).mockResolvedValue(1); // Only 1 service left
 
       const result = await deleteService(mockServiceId);
 
       expect(result.error).toBe("Cannot delete the last service. At least 1 service is required.");
-      expect(prisma.service.delete).not.toHaveBeenCalled();
+      expect(prisma.service.deleteMany).not.toHaveBeenCalled();
     });
 
     it("should return error when service not found", async () => {
-      (prisma.service.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.service.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await deleteService(mockServiceId);
 
       expect(result.error).toBe("Service not found.");
       expect(prisma.service.count).not.toHaveBeenCalled();
-      expect(prisma.service.delete).not.toHaveBeenCalled();
+      expect(prisma.service.deleteMany).not.toHaveBeenCalled();
     });
 
     it("should return error and log on delete failure", async () => {
@@ -223,9 +240,9 @@ describe("Dashboard Services Actions", () => {
         barberShopId: mockShopId,
       };
 
-      (prisma.service.findUnique as jest.Mock).mockResolvedValue(mockService);
+      (prisma.service.findFirst as jest.Mock).mockResolvedValue(mockService);
       (prisma.service.count as jest.Mock).mockResolvedValue(3);
-      (prisma.service.delete as jest.Mock).mockRejectedValue(new Error("DB error"));
+      (prisma.service.deleteMany as jest.Mock).mockRejectedValue(new Error("DB error"));
       
       const result = await deleteService(mockServiceId);
       

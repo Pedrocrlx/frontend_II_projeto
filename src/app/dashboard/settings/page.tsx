@@ -11,10 +11,32 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+interface ShopData {
+  id: string;
+  name: string | null;
+  description: string | null;
+  address: string | null;
+  phone: string | null;
+  instagram: string | null;
+  logoUrl: string | null;
+}
+
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error === "string" && error.trim().length > 0) {
+    return error;
+  }
+
+  return fallback;
+}
+
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { t } = useI18n();
-  const [shop, setShop] = useState<any>(null);
+  const [shop, setShop] = useState<ShopData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,28 +51,31 @@ export default function SettingsPage() {
   });
 
   const fetchShopData = useCallback(async () => {
-    if (!user?.id) return;
+    if (!isAuthenticated) return;
     
     setIsLoading(true);
     try {
-      const shopData = await getShopByUserId(user.id);
+      const shopData = await getShopByUserId();
       if (shopData) {
-        setShop(shopData);
+        const typedShopData = shopData as ShopData;
+        setShop(typedShopData);
         setFormData({
-          name: shopData.name || "",
-          description: shopData.description || "",
-          address: shopData.address || "",
-          phone: shopData.phone || "",
-          instagram: shopData.instagram || "",
-          logoUrl: shopData.logoUrl || "",
+          name: typedShopData.name || "",
+          description: typedShopData.description || "",
+          address: typedShopData.address || "",
+          phone: typedShopData.phone || "",
+          instagram: typedShopData.instagram || "",
+          logoUrl: typedShopData.logoUrl || "",
         });
+      } else {
+        setShop(null);
       }
     } catch (error) {
       console.error("Error fetching shop data:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchShopData();
@@ -78,7 +103,7 @@ export default function SettingsPage() {
       
       // Immediately update the shop with the new logo URL
       if (shop?.id) {
-        const result = await updateShop(shop.id, { logoUrl: publicUrl });
+        const result = await updateShop({ logoUrl: publicUrl });
         if (result.error) throw new Error(result.error);
         
         setFormData(prev => ({ ...prev, logoUrl: publicUrl }));
@@ -105,14 +130,14 @@ export default function SettingsPage() {
     const toastId = toast.loading(t.dashboard.settings.savingSettings);
 
     try {
-      const result = await updateShop(shop.id, formData);
+      const result = await updateShop(formData);
       if (result.error) throw new Error(result.error);
       
       toast.success(t.dashboard.settings.settingsSaved, { id: toastId });
       fetchShopData(); // Refetch to get the latest data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Save error:", error);
-      toast.error(error.message || t.dashboard.settings.saveFailed, { id: toastId });
+      toast.error(extractErrorMessage(error, t.dashboard.settings.saveFailed), { id: toastId });
     } finally {
       setIsSubmitting(false);
     }

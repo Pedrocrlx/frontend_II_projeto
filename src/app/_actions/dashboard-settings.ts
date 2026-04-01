@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { StorageService } from "@/services/storageService";
+import { getAuthenticatedBarberShopContext } from "./_helpers/auth-context";
 
 export interface ShopData {
   name?: string;
@@ -13,16 +14,27 @@ export interface ShopData {
   logoUrl?: string;
 }
 
-export async function updateShop(id: string, data: Partial<ShopData>) {
+export async function updateShop(data: Partial<ShopData>) {
   try {
-    const existingShop = await prisma.barberShop.findUnique({ where: { id } });
+    const authContext = await getAuthenticatedBarberShopContext();
+    if (!authContext) {
+      return { error: "Unauthorized." };
+    }
+
+    const existingShop = await prisma.barberShop.findUnique({
+      where: { id: authContext.barberShopId },
+    });
+
+    if (!existingShop) {
+      return { error: "Shop not found." };
+    }
 
     if (existingShop?.logoUrl && data.logoUrl && existingShop.logoUrl !== data.logoUrl) {
       await StorageService.deleteImage(existingShop.logoUrl);
     }
 
     const shop = await prisma.barberShop.update({
-      where: { id },
+      where: { id: authContext.barberShopId },
       data,
     });
 

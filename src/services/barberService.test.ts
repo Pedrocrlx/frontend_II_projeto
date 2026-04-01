@@ -1,7 +1,8 @@
 import { BarberService } from "./barberService";
+import type { AxiosInstance } from "axios";
 
 const mockGet = jest.fn();
-const fakeApi = { get: mockGet } as any;
+const fakeApi = { get: mockGet } as unknown as AxiosInstance;
 
 describe("BarberService.getProfileBySlug", () => {
   beforeEach(() => {

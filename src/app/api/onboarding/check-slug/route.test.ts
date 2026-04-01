@@ -86,7 +86,7 @@ describe("GET /api/onboarding/check-slug", () => {
   });
 
   it("should return available: false for slugs with invalid characters", async () => {
-    const invalidSlugs = ["My Shop", "shop@123", "shop_name", "SHOP"];
+    const invalidSlugs = ["My Shop", "shop@123", "shop_name"];
     
     for (const slug of invalidSlugs) {
       const request = makeRequest(slug);
@@ -98,6 +98,19 @@ describe("GET /api/onboarding/check-slug", () => {
       
       jest.clearAllMocks();
     }
+  });
+
+  it("should normalize uppercase slug to lowercase and check database", async () => {
+    mockFindUnique.mockResolvedValue(null);
+
+    const request = makeRequest("SHOP");
+    const response = await GET(request);
+    const body = await response.json();
+
+    expect(body.available).toBe(true);
+    expect(mockFindUnique).toHaveBeenCalledWith({
+      where: { slug: "shop" },
+    });
   });
 
   it("should normalize slug to lowercase before checking", async () => {

@@ -1,4 +1,5 @@
 import { authService } from "./authService";
+import type { AuthError, Session, User } from "@supabase/supabase-js";
 
 // Mock Supabase
 jest.mock("@/lib/supabase", () => ({
@@ -20,12 +21,42 @@ import { supabase } from "@/lib/supabase";
 
 const mockAuth = supabase.auth as jest.Mocked<typeof supabase.auth>;
 
+function createUser(overrides?: Partial<User>): User {
+  return {
+    id: "user-1",
+    app_metadata: {},
+    user_metadata: {},
+    aud: "authenticated",
+    created_at: new Date().toISOString(),
+    email: "test@example.com",
+    ...overrides,
+  } as User;
+}
+
+function createAuthError(message: string): AuthError {
+  return {
+    name: "AuthError",
+    message,
+  } as AuthError;
+}
+
+function createSession(overrides?: Partial<Session>): Session {
+  return {
+    access_token: "token-123",
+    refresh_token: "refresh-token-123",
+    expires_in: 3600,
+    token_type: "bearer",
+    user: createUser(),
+    ...overrides,
+  } as Session;
+}
+
 describe("authService.signUp", () => {
   beforeEach(() => jest.clearAllMocks());
 
   it("should return user data on successful sign up", async () => {
     mockAuth.signUp.mockResolvedValue({
-      data: { user: { id: "user-1", email: "test@example.com" } as any, session: null },
+      data: { user: createUser(), session: null },
       error: null,
     });
 
@@ -40,10 +71,10 @@ describe("authService.signUp", () => {
   });
 
   it("should return error when Supabase returns an error", async () => {
-    const authError = new Error("Email already in use");
+    const authError = createAuthError("Email already in use");
     mockAuth.signUp.mockResolvedValue({
       data: { user: null, session: null },
-      error: authError as any,
+      error: authError,
     });
 
     const result = await authService.signUp({
@@ -76,7 +107,7 @@ describe("authService.signIn", () => {
 
   it("should return user data on successful sign in", async () => {
     mockAuth.signInWithPassword.mockResolvedValue({
-      data: { user: { id: "user-1", email: "test@example.com" } as any, session: null as any },
+      data: { user: createUser(), session: createSession() },
       error: null,
     });
 
@@ -90,10 +121,10 @@ describe("authService.signIn", () => {
   });
 
   it("should return error on invalid credentials", async () => {
-    const authError = new Error("Invalid credentials");
+    const authError = createAuthError("Invalid credentials");
     mockAuth.signInWithPassword.mockResolvedValue({
-      data: { user: null, session: null as any },
-      error: authError as any,
+      data: { user: null, session: null },
+      error: authError,
     });
 
     const result = await authService.signIn({
@@ -118,8 +149,8 @@ describe("authService.signOut", () => {
   });
 
   it("should return error if sign out fails", async () => {
-    const authError = new Error("Sign out failed");
-    mockAuth.signOut.mockResolvedValue({ error: authError as any });
+    const authError = createAuthError("Sign out failed");
+    mockAuth.signOut.mockResolvedValue({ error: authError });
 
     const result = await authService.signOut();
 
@@ -143,8 +174,8 @@ describe("authService.resetPassword", () => {
   });
 
   it("should return error if reset request fails", async () => {
-    const authError = new Error("User not found");
-    mockAuth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: authError as any });
+    const authError = createAuthError("User not found");
+    mockAuth.resetPasswordForEmail.mockResolvedValue({ data: null, error: authError });
 
     const result = await authService.resetPassword("unknown@example.com");
 
@@ -156,9 +187,9 @@ describe("authService.getSession", () => {
   beforeEach(() => jest.clearAllMocks());
 
   it("should return session when authenticated", async () => {
-    const mockSession = { access_token: "token-123", user: { id: "user-1" } };
+    const mockSession = createSession({ user: createUser({ id: "user-1" }) });
     mockAuth.getSession.mockResolvedValue({
-      data: { session: mockSession as any },
+      data: { session: mockSession },
       error: null,
     });
 
