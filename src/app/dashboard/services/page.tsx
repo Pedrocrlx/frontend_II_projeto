@@ -1,17 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
 import { DashboardManagementLayout } from "../_components/DashboardManagementLayout";
-import { 
-  getShopByUserId, 
-  createService, 
-  updateService, 
-  deleteService,
-  ServiceData 
-} from "@/app/_actions/dashboard-services";
-import { toast } from "sonner";
 import { 
   Drawer, 
   DrawerContent, 
@@ -23,27 +13,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-interface ShopWithServices {
-  id: string;
-  services: Service[];
-}
-
-interface ActionErrorResult {
-  error: string;
-}
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  if (typeof error === "string" && error.trim().length > 0) {
-    return error;
-  }
-
-  return fallback;
-}
+import { useServicesPage } from "./_hooks/useServicesPage";
 
 // --- Icons ---
 function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -73,133 +43,25 @@ function EditIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-type Service = {
-  id: string;
-  name: string;
-  description: string | null;
-  price: string; // Decimal from Prisma
-  duration: number;
-};
-
 const PRICE_OPTIONS = [5, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 100];
 const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120];
 
 export default function ServicesPage() {
-  const { isAuthenticated } = useAuth();
   const { t } = useI18n();
-  const [shop, setShop] = useState<ShopWithServices | null>(null);
-  const [services, setServices] = useState<Service[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Form State
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<ServiceData>({
-    name: "",
-    description: "",
-    price: 15,
-    duration: 30
-  });
-
-  const fetchShopData = useCallback(async () => {
-    if (!isAuthenticated) return;
-    
-    setIsLoading(true);
-    try {
-      const shopData = await getShopByUserId();
-      if (shopData) {
-        const typedShopData = shopData as ShopWithServices;
-        setShop(typedShopData);
-        setServices(typedShopData.services);
-      } else {
-        setShop(null);
-        setServices([]);
-        console.warn("No shop found for current authenticated user.");
-      }
-    } catch (error) {
-      console.error("Error fetching shop data:", error);
-      toast.error(t.dashboard.services.errorTitle);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isAuthenticated, t.dashboard.services.errorTitle]);
-
-  useEffect(() => {
-    fetchShopData();
-  }, [fetchShopData]);
-
-  const handleOpenAdd = useCallback(() => {
-    setEditingId(null);
-    setFormData({ name: "", description: "", price: 15, duration: 30 });
-    setIsDrawerOpen(true);
-  }, []);
-
-  const handleOpenEdit = useCallback((service: Service) => {
-    setEditingId(service.id);
-    setFormData({
-      name: service.name,
-      description: service.description || "",
-      price: Number(service.price),
-      duration: service.duration
-    });
-    setIsDrawerOpen(true);
-  }, []);
-
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!isAuthenticated) {
-      toast.error(t.dashboard.services.errorNotAuth);
-      return;
-    }
-
-    if (!shop?.id) {
-      toast.error(t.dashboard.services.errorNoShop);
-      return;
-    }
-
-    if (!formData.name.trim()) {
-      toast.error(t.dashboard.services.errorNoName);
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      if (editingId) {
-        const result = await updateService(editingId, formData);
-        if (result.error) throw new Error(result.error);
-        toast.success(t.dashboard.services.successUpdated);
-      } else {
-        const result = await createService(formData);
-        if (result.error) throw new Error(result.error);
-        toast.success(t.dashboard.services.successCreated);
-      }
-      setIsDrawerOpen(false);
-      fetchShopData();
-    } catch (error: unknown) {
-      console.error("Submission error:", error);
-      toast.error(extractErrorMessage(error, t.dashboard.services.errorGeneric));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [isAuthenticated, shop?.id, formData, editingId, fetchShopData, t.dashboard.services]);
-
-  const handleDelete = useCallback(async (id: string) => {
-    if (!confirm(t.dashboard.services.deleteConfirm)) return;
-
-    try {
-      const result = await deleteService(id);
-      if ((result as ActionErrorResult).error) {
-        throw new Error((result as ActionErrorResult).error);
-      }
-      toast.success(t.dashboard.services.successDeleted);
-      fetchShopData();
-    } catch (error: unknown) {
-      console.error("Delete error:", error);
-      toast.error(extractErrorMessage(error, t.dashboard.services.errorDelete));
-    }
-  }, [fetchShopData, t.dashboard.services]);
+  const {
+    services,
+    isLoading,
+    isDrawerOpen,
+    isSubmitting,
+    editingId,
+    formData,
+    setIsDrawerOpen,
+    setFormData,
+    handleOpenAdd,
+    handleOpenEdit,
+    handleSubmit,
+    handleDelete,
+  } = useServicesPage();
 
   const selectBaseClass = "w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-blue-600/50 transition-all font-medium appearance-none";
 
